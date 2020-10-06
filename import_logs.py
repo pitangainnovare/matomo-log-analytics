@@ -1,6 +1,7 @@
 #!/usr/bin/python
-# vim: et sw=4 ts=4:
 # -*- coding: utf-8 -*-
+
+# vim: et sw=4 ts=4:
 #
 # Matomo - free/libre analytics platform
 #
