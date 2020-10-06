@@ -695,7 +695,7 @@ def test_elb_parsing():
     assert hits[0]['host'] == 'foo'
     assert hits[0]['filename'] == 'logs/elb.log'
     assert hits[0]['is_redirect'] == False
-    assert hits[0]['date'] == datetime.datetime(2015, 05, 13, 23, 39, 43)
+    assert hits[0]['date'] == datetime.datetime(2015, 5, 13, 23, 39, 43)
     assert hits[0]['lineno'] == 0
     assert hits[0]['ip'] == u'1.2.3.4'
     assert hits[0]['query_string'] == u''
@@ -775,7 +775,7 @@ def test_ovh_parsing():
     assert hits[0]['host'] == 'www.example.com'
     assert hits[0]['filename'] == 'logs/ovh.log'
     assert hits[0]['is_redirect'] == True
-    assert hits[0]['date'] == datetime.datetime(2012, 2, 10, 21, 42, 07)
+    assert hits[0]['date'] == datetime.datetime(2012, 2, 10, 21, 42, 7)
     assert hits[0]['lineno'] == 0
     assert hits[0]['ip'] == u'1.2.3.4'
     assert hits[0]['query_string'] == ''
@@ -819,7 +819,7 @@ def test_incapsulaw3c_parsing():
     assert hits[0]['host'] == 'www.example.com'
     assert hits[0]['filename'] == 'logs/incapsula_w3c.log'
     assert hits[0]['is_redirect'] == False
-    assert hits[0]['date'] == datetime.datetime(2017, 6, 28, 07, 26, 35)
+    assert hits[0]['date'] == datetime.datetime(2017, 6, 28, 7, 26, 35)
     assert hits[0]['lineno'] == 0
     assert hits[0]['ip'] == u'123.123.123.123'
     assert hits[0]['query_string'] == u'variable=test'
