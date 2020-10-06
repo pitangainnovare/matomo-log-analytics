@@ -2498,8 +2498,8 @@ class Parser(object):
 
     def check_user_agent(self, hit):
         user_agent = hit.user_agent.lower()
-        for s in itertools.chain(EXCLUDED_USER_AGENTS, config.options.excluded_useragents):
-            if s in user_agent:
+        for regex in EXCLUDED_USER_AGENTS_REGEXES:
+            if regex.search(user_agent):
                 if config.options.enable_bots:
                     hit.is_robot = True
                     return True
