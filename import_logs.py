@@ -963,7 +963,7 @@ class Configuration(object):
             '--useragent-exclude', dest='excluded_useragents',
             action='append', default=[],
             help="User agents to exclude (in addition to the standard excluded "
-            "user agents). Can be specified multiple times",
+            "user agents). Can be specified multiple times. It must be in a regex format.",
         )
         option_parser.add_option(
             '--enable-static', dest='enable_static',
