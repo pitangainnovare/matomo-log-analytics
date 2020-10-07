@@ -1056,6 +1056,24 @@ def test_static_ignores():
 
     assert len(hits) == 1
 
+def test_bot_ignores():
+    """Test bots are ignored."""
+    file_ = 'logs/bot_ignores.log'
+
+    Recorder.recorders = []
+    import_logs.parser = import_logs.Parser()
+    import_logs.config.format = None
+    import_logs.config.options.enable_static = False
+    import_logs.config.options.download_extensions = 'txt,doc'
+    import_logs.config.options.enable_bots = False
+    import_logs.config.options.enable_http_redirects = False
+    import_logs.config.options.enable_http_errors = False
+    import_logs.config.options.replay_tracking = False
+    import_logs.parser.parse(file_)
+
+    hits = [hit.args for hit in import_logs.Recorder.recorders]
+    assert len(hits) == 6
+
 def test_glob_filenames():
     """Test globbing of filenames"""
     argv = ["--url=http://localhost", "logs/common*.log", "logs/elb.log"]
