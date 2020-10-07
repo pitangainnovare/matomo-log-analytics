@@ -83,38 +83,6 @@ DOWNLOAD_EXTENSIONS = set((
     'azw3 epub mobi apk'
 ).split())
 
-# A good source is: http://phpbb-bots.blogspot.com/
-# user agents must be lowercase
-EXCLUDED_USER_AGENTS = (
-    'adsbot-google',
-    'ask jeeves',
-    'baidubot',
-    'bot-',
-    'bot/',
-    'ccooter/',
-    'crawl',
-    'curl',
-    'echoping',
-    'exabot',
-    'feed',
-    'googlebot',
-    'ia_archiver',
-    'java/',
-    'libwww',
-    'mediapartners-google',
-    'msnbot',
-    'netcraftsurvey',
-    'panopta',
-    'pingdom.com_bot_',
-    'robot',
-    'spider',
-    'surveybot',
-    'twiceler',
-    'voilabot',
-    'yahoo',
-    'yandex',
-)
-
 EXCLUDED_USER_AGENTS_REGEXES = [re.compile(pattern) for pattern in (
     r'bot',
     r'^buck\/[0-9]',
