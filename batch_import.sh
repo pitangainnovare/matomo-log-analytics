@@ -1,10 +1,8 @@
 #!/bin/bash
 
-echo "------------------------------------------------------"
-echo "|                                                    |"
-echo "| Script para enviar registros de acesso para Matomo |"
-echo "|                                                    |"
-echo "------------------------------------------------------"
+echo ""
+echo "Script para enviar registros de acesso para Matomo"
+echo "=================================================="
 
 if [[ -d $PYTHONHASHSEED ]]; then
 	exit 1
@@ -49,37 +47,41 @@ if [[ $recorders -gt $threads ]]; then
 fi
 
 echo ""
-echo "----------------------------"
-echo "| Configuração selecionada |"
-echo "----------------------------"
 echo ""
-echo "  Pasta de logs: $logs_dir"
-echo "  Identificador de site: $idsite"
-echo "  Número de recorders: $recorders"
-echo "  Url de site: $url"
+echo "* Configuração realizada"
+echo "------------------------"
+echo ""
+echo "* Pasta de logs: $logs_dir"
+echo "* Identificador de site: $idsite"
+echo "* Número de recorders: $recorders"
+echo "* Url de site: $url"
 echo ""
 
 current_dir=$(pwd)
 for i in $(ls $logs_dir); do
 	if [ ${i: -3} == '.gz' ]; then
-		echo "* Iniciando para arquivo $i";
+		echo ""
+		echo "* Iniciando para arquivo $i"
+		echo "------------------------"
 		source="$logs_dir/$i"
 		target="$current_dir/$i"
-		echo "  Copiando $source para $target"
+		echo "Copiando $source para $target"
 		cp $source $target
-		echo "  Descompactando $target"
+		echo "Descompactando $target"
 		gunzip $target;
 		log_file=${target::-3}
-		log_file_output=${log_file}"_loaded.txt"
-		echo "  Extraindo registros do arquido $log_file, registrando saída do importador em $log_file_output";
+		time=$(($(date +%s%N)/1000000))
+		log_file_output=${log_file}_${time}_loaded.txt
+		echo "Extraindo registros do arquido $log_file"
+		echo "Registrando saída do importador em $log_file_output"
 		if [[ -e "import_logs.py" ]]; then
-			python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --token-auth=$token_auth --output="$log_file.log" $log_file
+			python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --token-auth=$token_auth --output=$log_file_output $log_file
 		else
 			echo ""
-			echo "  ERRO: arquivo import_logs.py ausente"
+			echo "ERRO: arquivo import_logs.py ausente"
 			exit 1
 		fi
-		echo "  Removendo arquivo $log_file"
+		echo "Removendo arquivo $log_file"
 		rm $log_file;
 		echo ""
 	fi
