@@ -4,7 +4,10 @@ echo ""
 echo "Script para enviar registros de acesso para Matomo"
 echo "=================================================="
 
-if [[ -d $PYTHONHASHSEED ]]; then
+if [[ -z "$PYTHONHASHSEED" ]] || [[ $PYTHONHASHSEED != 0 ]]; then
+	echo ""
+	echo "ERRO: É preciso setar a variável de ambiente PYTHONHASHSEED com o valor 0"
+	echo "Executar 'export PYTHONHASHSEED=0'"
 	exit 1
 fi
 
@@ -26,7 +29,7 @@ url=$5
 
 if [ ! -d $logs_dir ]; then
 	echo ""
-	echo "ERRO: Diretório inexistente: $logs_dir";
+	echo "ERRO: Diretório inexistente: $logs_dir"
 	echo ""
 	exit 1
 fi
