@@ -11,7 +11,7 @@ if [[ -d $PYTHONHASHSEED ]]; then
 fi
 
 if [[ $# != 5 ]]; then
-	echo "É preciso informar três parâmetros"
+	echo "É preciso informar cinco parâmetros"
 	echo "  1) Pasta de logs"
 	echo "  2) Identificador numérico do site"
 	echo "  3) Número de recorders"
