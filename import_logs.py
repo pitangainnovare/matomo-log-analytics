@@ -61,7 +61,9 @@ except ImportError:
             print >> sys.stderr, 'simplejson (http://pypi.python.org/pypi/simplejson/) is required.'
             sys.exit(1)
 
-
+if os.environ.get('PYTHONHASHSEED') is None or os.environ.get('PYTHONHASHSEED') != '0':
+    print('You have to set the environment variable PYTHONHASHSEED=0')
+    sys.exit(1)
 
 ##
 ## Constants.
