@@ -11,7 +11,7 @@ if [[ -z "$PYTHONHASHSEED" ]] || [[ $PYTHONHASHSEED != 0 ]]; then
 	exit 1
 fi
 
-if [[ $# != 5 ]]; then
+if [[ $# -lt 5 ]]; then
 	echo "É preciso informar cinco parâmetros"
 	echo "  1) Pasta de logs"
 	echo "  2) Identificador numérico do site"
@@ -26,6 +26,7 @@ idsite=$2
 recorders=$3
 token_auth=$4
 url=$5
+debug=$6
 
 if [ ! -d $logs_dir ]; then
 	echo ""
@@ -78,7 +79,13 @@ for i in $(ls $logs_dir); do
 		echo "Extraindo registros do arquido $log_file"
 		echo "Registrando saída do importador em $log_file_output"
 		if [[ -e "import_logs.py" ]]; then
-			python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --token-auth=$token_auth --output=$log_file_output $log_file
+		  trap '' 2
+		  if [[ $debug == 'debug' ]]; then
+        python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --debug --accept-invalid-ssl-certificate --token-auth=$token_auth --output=$log_file_output $log_file
+      else
+        python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --token-auth=$token_auth --output=$log_file_output $log_file
+      fi
+      trap 2
 		else
 			echo ""
 			echo "ERRO: arquivo import_logs.py ausente"
