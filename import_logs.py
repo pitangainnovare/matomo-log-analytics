@@ -2774,6 +2774,19 @@ class Parser(object):
             try:
                 hit.referrer = format.get('referrer')
 
+                referrer_has_emoji = re.search(r'%F[0-9](%[0-F][0-F]){3}', hit.referrer)
+                warn_emoji_removal = False
+                if referrer_has_emoji:
+                    logging.warning('Linha: ' + line.strip())
+                    warn_emoji_removal = True
+
+                while referrer_has_emoji:
+                    hit.referrer = hit.referrer.replace(hit.referrer[referrer_has_emoji.start():referrer_has_emoji.end()], '')
+                    referrer_has_emoji = re.search(r'%F[0-9](%[0-F][0-F]){3}', hit.referrer)
+
+                if warn_emoji_removal:
+                    logging.warning('Referrer: ' + hit.referrer)
+
                 if hit.referrer.startswith('"'):
                     hit.referrer = hit.referrer[1:-1]
             except BaseFormatException:
