@@ -2640,6 +2640,23 @@ class Parser(object):
             if config.options.debug >= 2:
                 logging.debug('Filtered line out (%s): %s' % (reason, line))
 
+        def check_unssuported_symbols(url, line):
+            matches = re.search(r'%F[0-9](%[0-F][0-F]){3}', url)
+            warn_symbols_removal = False
+
+            if matches:
+                logging.warning('Dirty url on line %d: %s' % (line, url))
+                warn_symbols_removal = True
+
+            while matches:
+                url = hit.referrer.replace(url[matches.start():matches.end()], '')
+                matches = re.search(r'%F[0-9](%[0-F][0-F]){3}', url)
+
+            if warn_symbols_removal:
+                logging.warning('Cleaned url on line %d: %s' % (line, url))
+
+            return url
+
         if filename == '-':
             filename = '(stdin)'
             file = sys.stdin
@@ -2765,6 +2782,10 @@ class Parser(object):
             except BaseFormatException:
                 hit.path, _, hit.query_string = hit.full_path.partition(config.options.query_string_delimiter)
 
+            cleaned_url = check_unssuported_symbols(hit.path, lineno)
+            if cleaned_url:
+                hit.path = cleaned_url
+
             # W3cExtendedFormat detaults to - when there is no query string, but we want empty string
             if hit.query_string == '-':
                 hit.query_string = ''
@@ -2774,18 +2795,9 @@ class Parser(object):
             try:
                 hit.referrer = format.get('referrer')
 
-                referrer_has_emoji = re.search(r'%F[0-9](%[0-F][0-F]){3}', hit.referrer)
-                warn_emoji_removal = False
-                if referrer_has_emoji:
-                    logging.warning('Linha: ' + line.strip())
-                    warn_emoji_removal = True
-
-                while referrer_has_emoji:
-                    hit.referrer = hit.referrer.replace(hit.referrer[referrer_has_emoji.start():referrer_has_emoji.end()], '')
-                    referrer_has_emoji = re.search(r'%F[0-9](%[0-F][0-F]){3}', hit.referrer)
-
-                if warn_emoji_removal:
-                    logging.warning('Referrer: ' + hit.referrer)
+                cleaned_url = check_unssuported_symbols(hit.referrer, lineno)
+                if cleaned_url:
+                    hit.referrer = cleaned_url
 
                 if hit.referrer.startswith('"'):
                     hit.referrer = hit.referrer[1:-1]
