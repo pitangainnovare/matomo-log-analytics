@@ -2640,20 +2640,20 @@ class Parser(object):
             if config.options.debug >= 2:
                 logging.debug('Filtered line out (%s): %s' % (reason, line))
 
-        def check_unssuported_symbols(url, line):
+        def check_unsupported_symbols(url, line):
             matches = re.search(r'%F[0-9](%[0-F][0-F]){3}', url)
             warn_symbols_removal = False
 
             if matches:
-                logging.warning('Dirty url on line %d: %s' % (line, url))
+                logging.warning('Dirty url detected (%s): %s' % (url, line))
                 warn_symbols_removal = True
 
             while matches:
-                url = hit.referrer.replace(url[matches.start():matches.end()], '')
+                url = url.replace(url[matches.start():matches.end()], '')
                 matches = re.search(r'%F[0-9](%[0-F][0-F]){3}', url)
 
             if warn_symbols_removal:
-                logging.warning('Cleaned url on line %d: %s' % (line, url))
+                logging.warning('Cleaned url (%s): %s' % (url, line))
 
             return url
 
@@ -2782,7 +2782,7 @@ class Parser(object):
             except BaseFormatException:
                 hit.path, _, hit.query_string = hit.full_path.partition(config.options.query_string_delimiter)
 
-            cleaned_url = check_unssuported_symbols(hit.path, lineno)
+            cleaned_url = check_unsupported_symbols(hit.path, lineno)
             if cleaned_url:
                 hit.path = cleaned_url
 
@@ -2795,7 +2795,7 @@ class Parser(object):
             try:
                 hit.referrer = format.get('referrer')
 
-                cleaned_url = check_unssuported_symbols(hit.referrer, lineno)
+                cleaned_url = check_unsupported_symbols(hit.referrer, lineno)
                 if cleaned_url:
                     hit.referrer = cleaned_url
 
