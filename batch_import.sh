@@ -28,7 +28,7 @@ token_auth=$4
 url=$5
 debug=$6
 
-if [ ! -d $logs_dir ]; then
+if [ ! -d "$logs_dir" ]; then
     echo ""
     echo "ERRO: Diretório inexistente: $logs_dir"
     echo ""
@@ -63,36 +63,41 @@ echo ""
 
 current_dir=$(pwd)
 for i in $(ls $logs_dir); do
-    if [ ${i: -3} == '.gz' ]; then
+    if [ "${i: -3}" == '.gz' ]; then
         echo ""
         echo "* Iniciando para arquivo $i"
         echo "------------------------"
         source="$logs_dir/$i"
         target="$current_dir/$i"
         echo "Copiando $source para $target"
-        cp $source $target
-        echo "Descompactando $target"
-        gunzip $target;
-        log_file=${target::-3}
-        time=$(($(date +%s%N)/1000000))
-        log_file_output=${log_file}_${time}_loaded.txt
-        echo "Extraindo registros do arquido $log_file"
-        echo "Registrando saída do importador em $log_file_output"
-        if [[ -e "import_logs.py" ]]; then
-            trap '' 2
-            if [[ $debug == 'debug' ]]; then
-                python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --log-format-name=ncsa_extended --debug --accept-invalid-ssl-certificate --token-auth=$token_auth --output=$log_file_output $log_file
-            else
-                python2 import_logs.py --url=$url --idsite=$idsite --recorders=$recorders --log-format-name=ncsa_extended --token-auth=$token_auth --output=$log_file_output $log_file
-            fi
-            trap 2
+        cp "$source" "$target"
+        if [ $? -ne 0 ]
+        then
+            echo "Ocorreu um erro durante a cópia de $i - refazer"
         else
+            echo "Descompactando $target"
+            gunzip "$target";
+            log_file=${target::-3}
+            time=$(($(date +%s%N)/1000000))
+            log_file_output=${log_file}_${time}_loaded.txt
+            echo "Extraindo registros do arquido $log_file"
+            echo "Registrando saída do importador em $log_file_output"
+            if [[ -e "import_logs.py" ]]; then
+                trap '' 2
+                if [[ $debug == 'debug' ]]; then
+                    python2 import_logs.py --url="$url" --idsite="$idsite" --recorders="$recorders" --log-format-name=ncsa_extended --debug --accept-invalid-ssl-certificate --token-auth="$token_auth" --output="$log_file_output" "$log_file"
+                else
+                    python2 import_logs.py --url="$url" --idsite="$idsite" --recorders="$recorders" --log-format-name=ncsa_extended --token-auth="$token_auth" --output="$log_file_output" "$log_file"
+                fi
+                trap 2
+            else
+                echo ""
+                echo "ERRO: arquivo import_logs.py ausente"
+                exit 1
+            fi
+            echo "Removendo arquivo $log_file"
+            rm "$log_file";
             echo ""
-            echo "ERRO: arquivo import_logs.py ausente"
-            exit 1
         fi
-        echo "Removendo arquivo $log_file"
-        rm $log_file;
-        echo ""
     fi
 done
