@@ -109,7 +109,9 @@ for f in ${filelist}; do
     log_file_output="${log_file}"_retry"$retry_number"_loaded.txt
 
     echo "loading $log_file"
+    trap '' 2
     python2 import_logs.py --url="$url" --idsite="$idsite" --recorders="$recorders" --log-format-name=ncsa_extended --token-auth="$token_auth" --output="$log_file_output" "$log_file"
+    trap 2
 
     echo "removing $log_file"
     rm "$log_file"
