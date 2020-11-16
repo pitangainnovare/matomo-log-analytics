@@ -14,7 +14,7 @@ fi
 if [[ -z "$MATOMO_IMPORTER_ROOT_DIR" ]]; then
     echo ""
     echo "ERRO: É preciso indicar na variável de ambiente MATOMO_IMPORTER_ROOT_DIR a raiz da aplicação matomo-log-analytics"
-    echo "Por exemplo: executar 'export MATOMO_IMPORTER_ROOT_DIR=\$HOME/repos/matomo_log_analytics'"
+    echo "Por exemplo: executar 'export MATOMO_IMPORTER_ROOT_DIR=\$HOME/repos/matomo-log-analytics'"
     exit 1
 fi
 
