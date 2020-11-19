@@ -18,34 +18,30 @@ if [[ -z "$MATOMO_IMPORTER_ROOT_DIR" ]]; then
     exit 1
 fi
 
-if [[ $# -lt 6 ]]; then
+if [[ $# -lt 5 ]]; then
     echo "É preciso informar cinco parâmetros"
-    echo "  1) Arquivo contendo caminho de logs a serem recarregados"
-    echo "  2) Número da retentativa de carga"
-    echo "  3) Identificador numérico do site"
-    echo "  4) Número de recorders"
-    echo "  5) Token-auth do Matomo"
-    echo "  6) URL do site"
+    echo "  1) Arquivo contendo caminho de logs a serem recarregados e respectiva linha de retomada de carga"
+    echo "  2) Identificador numérico do site"
+    echo "  3) Número de recorders"
+    echo "  4) Token-auth do Matomo"
+    echo "  5) URL do site"
     exit 1
 fi
 
 # Arquivo que contém a lista de caminhos dos logs a serem recarregados (deve constar um caminho de log por linha)
 logs_list_file=$1
 
-# Indica o número da retentativa de carga
-retry_number=$2
-
 # Id do site
-idsite=$3
+idsite=$2
 
 # Número de threads de importação
-recorders=$4
+recorders=$3
 
 # Token do Matomo
-token_auth=$5
+token_auth=$4
 
 # Url do Matomo
-url=$6
+url=$5
 
 # Verifica número de threads de importação
 re="^[0-9]+$"
@@ -65,13 +61,14 @@ if [[ $recorders -gt $threads ]]; then
 fi
 
 if [ -f "$logs_list_file" ]; then
-    filelist=$(cat "$logs_list_file")
+    filelist=($(cat "$logs_list_file"))
 fi
 
-for l in ${filelist}; do
-    if [[ ! -f "$l" ]]; then
-        echo "O caminho $l não existe. Verificar lista de caminhos de logs."
-        exit 1
+for (( index=0; index<${#filelist[@]}; index+=2 )); do
+    echo "${filelist[index]}";
+    if [[ ! -f "${filelist[index]}" ]]; then
+        echo "O caminho ${filelist[index]} não existe. Verificar lista de caminhos de logs."
+        exit 1;
     fi
 done
 
@@ -83,16 +80,25 @@ echo "* Configuração realizada"
 echo "------------------------"
 echo ""
 echo "* Lista de logs:"
-for fl in $filelist; do
-  echo " $fl"
+for (( index=0; index<${#filelist[@]}; index+=2 )); do
+    echo "${filelist[index]} a partir da linha ${filelist[index + 1]}";
 done
-echo "* Retentativa de carga: $retry_number"
 echo "* Identificador de site: $idsite"
 echo "* Número de recorders: $recorders"
 echo "* Url de site: $url"
 echo ""
 
-for f in ${filelist}; do
+for (( index=0; index<${#filelist[@]}; index+=2 )); do
+    f=${filelist[index]}
+    start_line=${filelist[index + 1]}
+
+    if ! [[ $start_line =~ $re ]]; then
+       echo ""
+       echo "ERRO: arquivo $f, linha de início não é válida: $start_line"
+       echo ""
+       exit 1
+    fi
+
     echo "copying $f"
     cp "$f" .
 
@@ -105,12 +111,15 @@ for f in ${filelist}; do
     # extrai nome do arquivo de log a partir do arquivo gzipped
     log_file="${log_file_gz%%.gz*}"
 
+    # obtem timestamp atual
+    time=$(($(date +%s%N)/1000000))
+
     # cria nome para guardar saida da carga de dados
-    log_file_output="${log_file}"_retry"$retry_number"_loaded.txt
+    log_file_output="${log_file}_${time}_loaded.txt"
 
     echo "loading $log_file"
     trap '' 2
-    python2 import_logs.py --url="$url" --idsite="$idsite" --recorders="$recorders" --log-format-name=ncsa_extended --token-auth="$token_auth" --output="$log_file_output" "$log_file"
+    python2 import_logs.py --url="$url" --idsite="$idsite" --recorders="$recorders" --log-format-name=ncsa_extended --token-auth="$token_auth" --output="$log_file_output" --skip="$start_line" "$log_file"
     trap 2
 
     echo "removing $log_file"
