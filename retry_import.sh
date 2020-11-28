@@ -65,7 +65,6 @@ if [ -f "$logs_list_file" ]; then
 fi
 
 for (( index=0; index<${#filelist[@]}; index+=2 )); do
-    echo "${filelist[index]}";
     if [[ ! -f "${filelist[index]}" ]]; then
         echo "O caminho ${filelist[index]} não existe. Verificar lista de caminhos de logs."
         exit 1;
