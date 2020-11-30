@@ -1,7 +1,8 @@
 # coding=utf-8
+import argparse
 import os
 import re
-import sys
+
 
 ATTRS = sorted(['FILTERED_LOG_LINES',
                 'HTTP_ERRORS',
@@ -18,12 +19,13 @@ ATTRS = sorted(['FILTERED_LOG_LINES',
                 'SUCCESSFUL_LOADING',
                 'TOTAL_TIME'])
 
-HEADER = ','.join(['DATE', 'SERVER'] + ATTRS)
+HEADER = ','.join(['DATE', 'SERVER', 'URL'] + ATTRS)
 
 PATTERN_DATE = re.compile(r'[0-9]{4}-[0-9]{2}-[0-9]{2}')
 PATTERN_NUMBER = re.compile(r'[0-9]+')
 PATTERN_VARNISH = re.compile(r'varnish')
 PATTERN_NODE03 = re.compile(r'node03')
+PATTERN_URL = re.compile(r'--url=\'(.*)\'')
 
 PATTERN_ATTR = {}
 
@@ -56,20 +58,21 @@ def extract_summary_data(data, log_key):
     for a in ATTRS:
         extracted_data[a] = ''
 
-    extracted_data['LINES_PARSED'] = False
+    extracted_data['SUCCESSFUL_LOADING'] = False
 
     extract_others_values(reversed(data), extracted_data)
     extract_value_lines_parsed(reversed(data), extracted_data, log_key)
     extract_value_total_time(reversed(data), extracted_data)
+    extract_value_url(reversed(data), extracted_data)
 
     return extracted_data
 
 
 def extract_value_total_time(data, extracted_data):
-    for l in data:
-        li = re.search(PATTERN_ATTR['TOTAL_TIME'], l)
+    for d in data:
+        li = re.search(PATTERN_ATTR['TOTAL_TIME'], d)
         if li:
-            m = re.search(PATTERN_NUMBER, l)
+            m = re.search(PATTERN_NUMBER, d)
             if m:
                 total_time = int(m.group())
                 extracted_data['TOTAL_TIME'] = total_time
@@ -77,18 +80,18 @@ def extract_value_total_time(data, extracted_data):
 
 
 def extract_value_lines_parsed(data, extracted_data, log_key):
-    for l in data:
-        if 'lines parsed' in l:
-            ln = len(re.findall(PATTERN_NUMBER, l))
+    for d in data:
+        if 'lines parsed' in d:
+            ln = len(re.findall(PATTERN_NUMBER, d))
             if ln != 4:
                 extracted_data['SUCCESSFUL_LOADING'] = False
             else:
-                m = re.search(PATTERN_NUMBER, l)
+                m = re.search(PATTERN_NUMBER, d)
                 if m:
                     lines_parsed = int(m.group())
                     extracted_data['LINES_PARSED'] = lines_parsed
 
-                    official_nlines = validation_table.get(log_key, [-1])
+                    official_nlines = validation_data.get(log_key, [-1])
                     if -1 in official_nlines:
                         print('[WARNING] Não há informação oficial para (%s,%s)' % log_key)
 
@@ -100,17 +103,28 @@ def extract_value_lines_parsed(data, extracted_data, log_key):
 
 
 def extract_others_values(data, extracted_data):
-    for l in data:
-        for attr in [a for a in ATTRS if a not in {'lines parsed', 'total time'}]:
+    for d in data:
+        for d_attr in [a for a in ATTRS if a not in {'lines parsed', 'total time'}]:
 
-            ki_vi_line = re.search(PATTERN_ATTR[attr], l)
+            ki_vi_line = re.search(PATTERN_ATTR[d_attr], d)
 
             if ki_vi_line:
-                m = re.search(PATTERN_NUMBER, l)
+                m = re.search(PATTERN_NUMBER, d)
                 if m:
                     vi = int(m.group())
-                    extracted_data[attr] = vi
+                    extracted_data[d_attr] = vi
                 break
+
+
+def extract_value_url(data, extracted_data):
+    for d in data:
+        m = re.search(PATTERN_URL, d)
+        if m:
+            extracted_data['URL'] = m.group(1)
+            break
+
+    if 'URL' not in extracted_data:
+        extracted_data['URL'] = 'https://matomo.scielo.org'
 
 
 def read_validation_file(path_validation_table):
@@ -154,21 +168,40 @@ def save_summary(date_to_summaries):
     with open('summary.csv', 'w') as f:
         f.write(HEADER + '\n')
 
-        for date_server in sorted(date_to_summaries.keys()):
-            date, server = date_server
+        for key_date_server in sorted(date_to_summaries.keys()):
+            date, server = key_date_server
 
-            for summary in date_to_summaries[date_server]:
-                str_values = ','.join([date, server] + [str(summary[attr]) for attr in ATTRS])
+            for d_summary in date_to_summaries[key_date_server]:
+                str_values = ','.join([date, server, d_summary['URL']] + [str(d_summary[d_attr]) for d_attr in ATTRS])
                 f.write(str_values + '\n')
 
 
 if __name__ == '__main__':
-    validation_table = read_validation_file(sys.argv[1])
+    usage = 'Extrai arquivo de sumário de logs carregados no Matomo'
+    parser = argparse.ArgumentParser(usage)
+
+    parser.add_argument(
+        '-v', '--validation_file',
+        dest='validation_file',
+        required=True,
+        help='Arquivo contendo lista de caminhos de logs de acessos e respectivos números de linhas'
+    )
+
+    parser.add_argument(
+        '-l', '--logs_dir',
+        dest='logs_dir',
+        required=True,
+        help='Pasta com arquivos de sumário de carga de logs no Matomo'
+    )
+
+    params = parser.parse_args()
+
+    validation_data = read_validation_file(params.validation_file)
 
     summaries = {}
 
-    for log_file in os.listdir(sys.argv[2]):
-        date_server, summary = read_loaded_log(sys.argv[2] + '/' + log_file)
+    for log_file in os.listdir(params.logs_dir):
+        date_server, summary = read_loaded_log(os.path.join(params.logs_dir, log_file))
         if date_server not in summaries:
             summaries[date_server] = []
         summaries[date_server].append(summary)
