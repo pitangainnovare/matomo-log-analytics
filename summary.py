@@ -17,6 +17,8 @@ ATTRS = sorted(['FILTERED_LOG_LINES',
                 'REQUESTS_TO_STATIC_RESOURCES',
                 'REQUESTS_TO_FILE_DOWNLOADS_DID_NOT_MATCH',
                 'SUCCESSFUL_LOADING',
+                'OFFICIAL_SERVER',
+                'OFFICIAL_NLINES',
                 'TOTAL_TIME'])
 
 HEADER = ','.join(['DATE', 'SERVER', 'URL'] + ATTRS)
@@ -44,13 +46,17 @@ def get_log_date(log_file_name):
 
 
 def get_log_server(log_file_name):
-    match = re.search(PATTERN_VARNISH, log_file_name)
+    match_is_varnish = re.search(PATTERN_VARNISH, log_file_name)
 
-    if match:
+    if match_is_varnish:
         return 'hiperion-varnish'
-
     else:
-        return 'hiperion-apache'
+        match_is_node03 = re.search(PATTERN_NODE03, log_file_name)
+
+        if match_is_node03:
+            return 'hiperion-node03'
+
+    return 'hiperion-apache'
 
 
 def extract_summary_data(data, log_key):
@@ -59,6 +65,8 @@ def extract_summary_data(data, log_key):
         extracted_data[a] = ''
 
     extracted_data['SUCCESSFUL_LOADING'] = False
+    extracted_data['OFFICIAL_NLINES'] = -1
+    extracted_data['OFFICIAL_SERVER'] = -1
 
     extract_others_values(reversed(data), extracted_data)
     extract_value_lines_parsed(reversed(data), extracted_data, log_key)
@@ -91,14 +99,20 @@ def extract_value_lines_parsed(data, extracted_data, log_key):
                     lines_parsed = int(m.group())
                     extracted_data['LINES_PARSED'] = lines_parsed
 
-                    official_nlines = validation_data.get(log_key, [-1])
+                    date, server = log_key
+                    official_nlines = validation_date_to_lines_list.get(date, [-1])
                     if -1 in official_nlines:
                         print('[WARNING] Não há informação oficial para (%s,%s)' % log_key)
 
-                    if lines_parsed in official_nlines:
-                        extracted_data['SUCCESSFUL_LOADING'] = True
-                    else:
-                        extracted_data['SUCCESSFUL_LOADING'] = False
+                    for ol in official_nlines:
+                        if lines_parsed == ol:
+                            extracted_data['SUCCESSFUL_LOADING'] = True
+                            extracted_data['OFFICIAL_NLINES'] = ol
+
+                            official_server = validation_date_server_to_line.get((date, ol), -1)
+                            extracted_data['OFFICIAL_SERVER'] = official_server
+
+                            break
             break
 
 
@@ -128,7 +142,8 @@ def extract_value_url(data, extracted_data):
 
 
 def read_validation_file(path_validation_table):
-    date_server_to_n = {}
+    date_to_lines_list = {}
+    date_line_to_server = {}
 
     with open(path_validation_table) as f:
         for i in f:
@@ -141,11 +156,16 @@ def read_validation_file(path_validation_table):
                 print('[ERRO] Linha inválida em arquivo validador: %s' % i)
                 exit(1)
 
-            if (date, server) not in date_server_to_n:
-                date_server_to_n[(date, server)] = []
-            date_server_to_n[(date, server)].append(lines)
+            if date not in date_to_lines_list:
+                date_to_lines_list[date] = []
+            date_to_lines_list[date].append(lines)
 
-    return date_server_to_n
+            if (date, lines) not in date_line_to_server:
+                date_line_to_server[(date, lines)] = server
+            else:
+                print('[ERRO] (%s, %s) já existe' % (date, lines))
+
+    return date_to_lines_list, date_line_to_server
 
 
 def read_loaded_log(path_loaded_log):
@@ -155,9 +175,9 @@ def read_loaded_log(path_loaded_log):
     with open(path_loaded_log) as f:
         f_raw = [line.strip().lower() for line in f.readlines()]
 
-        log_file_name = get_log_date(path_loaded_log)
-        log_file_server = get_log_server(path_loaded_log)
-        log_key = (log_file_name, log_file_server)
+        log_date = get_log_date(path_loaded_log)
+        log_server = get_log_server(path_loaded_log)
+        log_key = (log_date, log_server)
 
         f_summary = extract_summary_data(f_raw, log_key)
 
@@ -196,7 +216,7 @@ if __name__ == '__main__':
 
     params = parser.parse_args()
 
-    validation_data = read_validation_file(params.validation_file)
+    validation_date_to_lines_list, validation_date_server_to_line = read_validation_file(params.validation_file)
 
     summaries = {}
 
