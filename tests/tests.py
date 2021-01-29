@@ -4,8 +4,11 @@ import os
 import datetime
 import re
 import json
+import sys
+sys.path.append('')
 
-import import_logs
+from libs import import_logs
+
 
 # utility functions
 def add_junk_to_file(path):
@@ -933,7 +936,7 @@ def test_ignore_groups_option_removes_groups():
     import_logs.config.options.enable_http_errors = True
     import_logs.config.options.replay_tracking = False
     import_logs.config.options.w3c_time_taken_in_millisecs = True
-    import_logs.config.options.regex_groups_to_ignore = set(['userid','generation_time_milli'])
+    import_logs.config.options.regex_groups_to_ignore = set(['userid', 'generation_time_milli'])
     import_logs.parser.parse(file_)
 
     hits = [hit.__dict__ for hit in Recorder.recorders]
@@ -1028,7 +1031,7 @@ def test_custom_log_date_format_option():
     )
     import_logs.config.options.log_date_format = '%B - %d, %Y:%H:%M:%S'
     import_logs.config.format = import_logs.RegexFormat('custom', import_logs.config.options.log_format_regex,
-        import_logs.config.options.log_date_format)
+                                                        import_logs.config.options.log_date_format)
 
     import_logs.parser.parse(file_)
 
