@@ -8,10 +8,10 @@ import shutil
 
 from sqlalchemy.orm.exc import NoResultFound
 from libs.lib_database import get_db_session
-from models.declarative import LogFile
-
+from models.declarative import LogFile, DateStatus
 
 COPY_FILES_LIMIT = int(os.environ.get('COPY_FILES_LIMIT', 6))
+COLLECTION = os.environ.get('COLLECTION', 'scl')
 DIRS_USAGE_LOGS = os.environ.get('DIRS_USAGE_LOGS', '/logs_hiperion,/logs_node03').split(',')
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
@@ -53,8 +53,11 @@ def copy_files():
             source = rf.full_path
             target = os.path.join(DIR_WORKING_LOGS, rf_name_gz)
 
-            logging.info('Copying file "%s" to "%s"' % (source, target))
-            shutil.copy(source, target)
+            if os.path.exists(target):
+                logging.warning('Log file %s exists' % target)
+            else:
+                logging.info('Copying file "%s" to "%s"' % (source, target))
+                shutil.copy(source, target)
 
 
 def update_log_file_table():
@@ -78,10 +81,55 @@ def update_log_file_table():
                     lf.date = date
                     lf.name = _extract_name(server, date)
                     lf.status = 'queue'
+                    lf.collection = COLLECTION
 
                     db_session.add(lf)
                     db_session.commit()
                     logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
+
+
+def _compute_date_status(status_list):
+    status_sum = 0
+    for s in status_list:
+        if s == 'completed':
+            status_sum += 1
+
+    if status_sum == 2:
+        return 'completed'
+    elif status_sum == 1:
+        return 'partial'
+
+    return 'queue'
+
+
+def update_date_status_table():
+    db_session = get_db_session(LOG_FILE_DATABASE_STRING)
+
+    try:
+        lfdate_to_status_files = {}
+        for lf in db_session.query(LogFile).filter(LogFile.collection == COLLECTION):
+            if lf.date not in lfdate_to_status_files:
+                lfdate_to_status_files[lf.date] = []
+            lfdate_to_status_files[lf.date].append(lf.status)
+
+        for key in lfdate_to_status_files:
+            new_status = _compute_date_status(lfdate_to_status_files[key])
+
+            try:
+                existing_date_status = db_session.query(DateStatus).filter(DateStatus.date == key).one()
+                existing_date_status.status = new_status
+
+            except NoResultFound:
+                new_ds = DateStatus()
+                new_ds.status = new_status
+                new_ds.date = key
+                new_ds.collection = COLLECTION
+
+                db_session.add(new_ds)
+    except NoResultFound:
+        logging.error('There are no log files registered in the table log_file')
+
+    db_session.commit()
 
 
 if __name__ == '__main__':
@@ -90,7 +138,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-m', '--execution_mode',
         dest='exec_mode',
-        default=['update_log_file', 'copy_logs'],
+        default=['update_log_file', 'copy_logs', 'date_status'],
         help='Modo de execução'
     )
 
@@ -105,8 +153,13 @@ if __name__ == '__main__':
         os.makedirs(DIR_WORKING_LOGS)
 
     if 'update_log_file' in params.exec_mode:
-        logging.info('Updating log_file_table')
+        logging.info('Updating table log_file')
         update_log_file_table()
+
     if 'copy_logs' in params.exec_mode:
-        logging.info('Copying log files to local working directory %s' % DIR_WORKING_LOGS)
+        logging.info('Copying possible new log files to the local working directory %s' % DIR_WORKING_LOGS)
         copy_files()
+
+    if 'date_status' in params.exec_mode:
+        logging.info('Updating table date_status')
+        update_date_status_table()
