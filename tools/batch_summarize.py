@@ -54,7 +54,7 @@ def get_log_server(log_file_name):
         match_is_node03 = re.search(PATTERN_NODE03, log_file_name)
 
         if match_is_node03:
-            return 'hiperion-node03'
+            return 'node03'
 
     return 'hiperion-apache'
 

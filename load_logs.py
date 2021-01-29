@@ -32,9 +32,6 @@ def get_files():
         existing_files = set()
 
     efs = set([ef.name for ef in existing_files if ef.status == 'completed'])
-
-    db_session.close()
-
     return sorted([os.path.join(DIR_WORKING_LOGS, f) for f in files_names.difference(efs)])
 
 
@@ -97,8 +94,6 @@ def update_log_file_summary_table(summary_file, expected_lines, file_name):
     db_session.add(lfs)
     db_session.commit()
 
-    db_session.close()
-
     return lfs.status
 
 
@@ -116,8 +111,6 @@ def update_log_file_table(file_name, status):
         pass
     except MultipleResultsFound:
         pass
-
-    db_session.close()
 
 
 if __name__ == '__main__':
@@ -153,8 +146,8 @@ if __name__ == '__main__':
         full_path_summary_output = os.path.join(DIR_WORKING_LOADED_LOGS, summary_path_output)
         status = update_log_file_summary_table(full_path_summary_output, expected_lines=total_lines, file_name=file_name)
 
-        if status == 'success':
-            logging.info('Removing file %s' % file_path)
+        if status == 'completed':
+            logging.info('Removing file %s' % gunzipped_file_path)
             os.remove(file_path)
 
         logging.info('Updating log_file for row %s' % file_name)

@@ -56,8 +56,6 @@ def copy_files():
             logging.info('Copying file "%s" to "%s"' % (source, target))
             shutil.copy(source, target)
 
-    db_session.close()
-
 
 def update_log_file_table():
     db_session = get_db_session(LOG_FILE_DATABASE_STRING)
@@ -84,8 +82,6 @@ def update_log_file_table():
                     db_session.add(lf)
                     db_session.commit()
                     logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
-
-    db_session.close()
 
 
 if __name__ == '__main__':
