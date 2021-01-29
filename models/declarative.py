@@ -1,5 +1,5 @@
-from sqlalchemy import Column, BOOLEAN, Date, DateTime, ForeignKey
-from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
+from sqlalchemy import Column, Date, DateTime, ForeignKey
+from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -7,7 +7,7 @@ Base = declarative_base()
 
 
 class LogFile(Base):
-    __tablename__ = 'log_file'
+    __tablename__ = 'control_log_file'
 
     id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
 
@@ -18,13 +18,14 @@ class LogFile(Base):
     server = Column(VARCHAR(255), nullable=False)
     date = Column(Date, nullable=False, index=True)
     status = Column(VARCHAR(10))
+    collection = Column(VARCHAR(3), nullable=False)
 
 
 class LogFileSummary(Base):
-    __tablename__ = 'log_file_summary'
+    __tablename__ = 'control_log_file_summary'
 
     id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
-    idlogfile = Column(INTEGER(unsigned=True), ForeignKey('log_file.id', name='idlogfile'))
+    idlogfile = Column(INTEGER(unsigned=True), ForeignKey('control_log_file.id', name='idlogfile'))
 
     total_lines = Column(INTEGER, nullable=False)
     lines_parsed = Column(INTEGER)
@@ -41,3 +42,13 @@ class LogFileSummary(Base):
 
     total_time = Column(INTEGER)
     status = Column(VARCHAR(10))
+
+
+class DateStatus(Base):
+    __tablename__ = 'control_date_status'
+
+    id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
+
+    date = Column(Date(), nullable=False, unique=True, index=True)
+    status = Column(VARCHAR(10), nullable=False, index=True)
+    collection = Column(VARCHAR(3), nullable=False)

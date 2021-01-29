@@ -1,6 +1,9 @@
 # coding=utf-8
 import re
+import os
 
+
+DIFF_LINES = int(os.environ.get('DIFF_LINES', '50000'))
 
 SUMMARY_ATTRIBUTES = sorted(['filtered_log_lines',
                              'http_errors',
@@ -31,14 +34,14 @@ def extract_summary_data(data, expected_total_lines):
         extracted_data[a] = ''
 
     extracted_data['status'] = ''
-    extract_main_values(reversed(data), extracted_data)
-    extract_time_spent(reversed(data), extracted_data)
-    set_status(extracted_data, expected_total_lines)
+    _extract_main_values(reversed(data), extracted_data)
+    _extract_total_time(reversed(data), extracted_data)
+    _set_status_and_lines_parsed(reversed(data), extracted_data, expected_total_lines)
 
     return extracted_data
 
 
-def extract_time_spent(data, extracted_data):
+def _extract_total_time(data, extracted_data):
     for d in data:
         li = re.search(PATTERN_ATTR['total_time'], d)
         if li:
@@ -49,22 +52,48 @@ def extract_time_spent(data, extracted_data):
             break
 
 
-def set_status(extracted_data, expected_lines):
-    imported_lines = int(extracted_data.get('requests_imported_successfully', '-1'))
-    lines_ignored = int(extracted_data.get('requests_ignored', '-1'))
+def _set_status_and_lines_parsed(data, extracted_data, expected_lines):
+    imported_lines = int(extracted_data.get('requests_imported_successfully'))
+    lines_ignored = int(extracted_data.get('requests_ignored'))
 
     lines_parsed = imported_lines + lines_ignored
+
     if lines_parsed == expected_lines:
         extracted_data['status'] = 'completed'
+        extracted_data['lines_parsed'] = lines_parsed
     elif lines_parsed < expected_lines:
         extracted_data['status'] = 'partial'
+        extracted_data['lines_parsed'] = lines_parsed
     else:
-        extracted_data['status'] = 'failed'
-
-    extracted_data['lines_parsed'] = lines_parsed
+        _extract_values_failure_summary(data, extracted_data, expected_lines)
 
 
-def extract_main_values(data, extracted_data):
+def _extract_values_failure_summary(data, extracted_data, expected_lines):
+    for d in data:
+        if 'lines parsed' in d:
+            ln = len(re.findall(PATTERN_NUMBER, d))
+            if ln == 4:
+                m = re.search(PATTERN_NUMBER, d)
+                if m:
+                    lines_parsed = int(m.group())
+
+                    if lines_parsed == expected_lines:
+                        extracted_data['status'] = 'completed'
+                        extracted_data['lines_parsed'] = lines_parsed
+                    else:
+                        if lines_parsed - DIFF_LINES > 0:
+                            extracted_data['lines_parsed'] = lines_parsed
+                            extracted_data['status'] = 'partial'
+                        else:
+                            extracted_data['lines_parsed'] = 0
+                            extracted_data['status'] = 'failed'
+            else:
+                extracted_data['lines_parsed'] = 0
+                extracted_data['status'] = 'failed'
+            break
+
+
+def _extract_main_values(data, extracted_data):
     for d in data:
         for d_attr in [a for a in SUMMARY_ATTRIBUTES if a not in {'lines_parsed', 'total_time'}]:
 
