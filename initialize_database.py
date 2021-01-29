@@ -1,3 +1,4 @@
+# coding=utf-8
 import argparse
 import logging
 import os
@@ -11,7 +12,7 @@ LOGS_FILES_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql:/
 
 
 def main():
-    usage = """Cria tabela LogFile para armazenar dados de arquivos de log de acesso."""
+    usage = """Cria tabelas para armazenar dados de controle do processo completo da aplicação Matomo/COUNTER/SUSHI."""
     parser = argparse.ArgumentParser(usage)
 
     parser.add_argument(
@@ -32,7 +33,7 @@ def main():
 
     logging.basicConfig(level=params.logging_level)
 
-    logging.info('Criando tabelas LogFile e LogFileSummary')
+    logging.info('Criando tabelas control_log_file, control_log_file_summary e control_log_file_date_status')
     lib_database.create_tables(params.database_uri)
 
 
