@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
         if status == 'completed':
             logging.info('Removing file %s' % gunzipped_file_path)
-            os.remove(file_path)
+            os.remove(gunzipped_file_path)
 
         logging.info('Updating log_file for row %s' % file_name)
         update_log_file_table(file_name, status)
