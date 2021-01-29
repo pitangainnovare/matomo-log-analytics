@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -8,13 +9,13 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from libs.lib_database import get_db_session
 from libs.lib_summary import read_summary
 from models.declarative import LogFile, LogFileSummary
-
+from update_available_logs import update_date_status_table
 
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
 DIR_WORKING_LOADED_LOGS = os.environ.get('DIR_WORKING_LOADED_LOGS', '.')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
-
+COLLECTION = os.environ.get('COLLECTION', 'scl')
 MATOMO_ID_SITE = os.environ.get('MATOMO_ID_SITE', '1')
 MATOMO_API_TOKEN = os.environ.get('MATOMO_API_TOKEN', 'e536004d5816c66e10e23a80fbd57911')
 MATOMO_URL = os.environ.get('MATOMO_URL', 'http://172.17.0.4')
@@ -26,7 +27,7 @@ def get_files():
 
     db_session = get_db_session(LOG_FILE_DATABASE_STRING)
     try:
-        existing_files = db_session.query(LogFile).filter(LogFile.name.in_(files_names))
+        existing_files = db_session.query(LogFile).filter(LogFile.collection == COLLECTION).filter(LogFile.name.in_(files_names))
     except NoResultFound:
         logging.debug('Não há informação de arquivos na tabela LogFile')
         existing_files = set()
@@ -65,6 +66,8 @@ def _count_total_lines(file):
 def update_log_file_summary_table(summary_file, expected_lines, file_name):
     summary_data = read_summary(summary_file, expected_lines)
 
+    db_session = get_db_session(LOG_FILE_DATABASE_STRING)
+
     lfs = LogFileSummary()
     lfs.total_lines = expected_lines
     lfs.lines_parsed = summary_data.get('lines_parsed')
@@ -81,8 +84,6 @@ def update_log_file_summary_table(summary_file, expected_lines, file_name):
 
     lfs.total_time = summary_data.get('total_time')
     lfs.status = summary_data.get('status')
-
-    db_session = get_db_session(LOG_FILE_DATABASE_STRING)
 
     try:
         idlogfile = db_session.query(LogFile).filter(LogFile.name == file_name).one().id
@@ -101,16 +102,17 @@ def update_log_file_table(file_name, status):
     db_session = get_db_session(LOG_FILE_DATABASE_STRING)
 
     try:
-        log_file_row = db_session.query(LogFile).filter(LogFile.name == file_name).one()
+        log_file_row = db_session.query(LogFile).filter(LogFile.collection == COLLECTION).filter(LogFile.name == file_name).one()
         if log_file_row.status != status:
             if log_file_row.status != 'completed':
                 logging.info('Changing status of %s from %s to %s' % (file_name, log_file_row.status, status))
                 log_file_row.status = status
-                db_session.commit()
     except NoResultFound:
         pass
     except MultipleResultsFound:
         pass
+
+    db_session.commit()
 
 
 if __name__ == '__main__':
@@ -152,6 +154,9 @@ if __name__ == '__main__':
 
         logging.info('Updating log_file for row %s' % file_name)
         update_log_file_table(file_name, status)
+
+        logging.info('Updating date_status')
+        update_date_status_table()
 
         time_end = time.time()
         logging.info('Time spent: (%.2f) seconds' % (time_end - time_start))
