@@ -95,7 +95,7 @@ def _compute_date_status(status_list):
             status_sum += 1
 
     if status_sum == 2:
-        return 'completed'
+        return 'loaded'
     elif status_sum == 1:
         return 'partial'
 
