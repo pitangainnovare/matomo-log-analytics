@@ -140,6 +140,7 @@ if __name__ == '__main__':
         total_lines = _count_total_lines(gunzipped_file_path)
 
         logging.info('Loading %s' % gunzipped_file_path)
+        update_log_file_table(file_name, 'loading')
         import_logs_params = _generate_import_logs_params(gunzipped_file_path, summary_path_output)
         subprocess.call('python2 libs/import_logs.py' + ' ' + import_logs_params, shell=True)
 
