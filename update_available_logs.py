@@ -91,7 +91,7 @@ def update_log_file_table():
 def _compute_date_status(status_list):
     status_sum = 0
     for s in status_list:
-        if s == 'completed':
+        if s == 'loaded':
             status_sum += 1
 
     if status_sum == 2:
@@ -107,7 +107,7 @@ def update_date_status_table():
 
     try:
         lfdate_to_status_files = {}
-        for lf in db_session.query(LogFile).filter(LogFile.collection == COLLECTION):
+        for lf in db_session.query(LogFile).filter(LogFile.collection == COLLECTION).filter(LogFile.status.in_(['partial', 'queue'])):
             if lf.date not in lfdate_to_status_files:
                 lfdate_to_status_files[lf.date] = []
             lfdate_to_status_files[lf.date].append(lf.status)

@@ -31,7 +31,7 @@ def get_files():
         logging.debug('Não há informação de arquivos na tabela LogFile')
         existing_files = set()
 
-    efs = set([ef.name for ef in existing_files if ef.status == 'completed'])
+    efs = set([ef.name for ef in existing_files if ef.status == 'loaded'])
     return sorted([os.path.join(DIR_WORKING_LOGS, f) for f in files_names.difference(efs)])
 
 
@@ -103,7 +103,7 @@ def update_log_file_table(file_name, status):
     try:
         log_file_row = db_session.query(LogFile).filter(LogFile.collection == COLLECTION).filter(LogFile.name == file_name).one()
         if log_file_row.status != status:
-            if log_file_row.status != 'completed':
+            if log_file_row.status != 'loaded':
                 logging.info('Changing status of %s from %s to %s' % (file_name, log_file_row.status, status))
                 log_file_row.status = status
     except NoResultFound:
@@ -147,7 +147,7 @@ if __name__ == '__main__':
         full_path_summary_output = os.path.join(DIR_LOADED_LOGS, summary_path_output)
         status = update_log_file_summary_table(full_path_summary_output, expected_lines=total_lines, file_name=file_name)
 
-        if status == 'completed':
+        if status == 'loaded':
             logging.info('Removing file %s' % gunzipped_file_path)
             os.remove(gunzipped_file_path)
 

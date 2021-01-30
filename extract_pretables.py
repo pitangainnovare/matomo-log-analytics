@@ -3,7 +3,7 @@ import logging
 import os
 
 from libs.lib_database import extract_pretable, get_dates_able_to_extract, set_date_status
-from update_available_logs import update_date_status_table
+
 
 COLLECTION = os.environ.get('COLLECTION', 'scl')
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
