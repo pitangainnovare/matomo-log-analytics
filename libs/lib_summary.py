@@ -59,7 +59,7 @@ def _set_status_and_lines_parsed(data, extracted_data, expected_lines):
     lines_parsed = imported_lines + lines_ignored
 
     if lines_parsed == expected_lines:
-        extracted_data['status'] = 'completed'
+        extracted_data['status'] = 'loaded'
         extracted_data['lines_parsed'] = lines_parsed
     elif lines_parsed < expected_lines:
         extracted_data['status'] = 'partial'
@@ -78,7 +78,7 @@ def _extract_values_failure_summary(data, extracted_data, expected_lines):
                     lines_parsed = int(m.group())
 
                     if lines_parsed == expected_lines:
-                        extracted_data['status'] = 'completed'
+                        extracted_data['status'] = 'loaded'
                         extracted_data['lines_parsed'] = lines_parsed
                     else:
                         if lines_parsed - DIFF_LINES > 0:

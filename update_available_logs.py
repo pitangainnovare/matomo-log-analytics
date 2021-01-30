@@ -107,7 +107,7 @@ def update_date_status_table():
 
     try:
         lfdate_to_status_files = {}
-        for lf in db_session.query(LogFile).filter(LogFile.collection == COLLECTION).filter(LogFile.status.in_(['partial', 'queue'])):
+        for lf in db_session.query(LogFile).filter(LogFile.collection == COLLECTION):
             if lf.date not in lfdate_to_status_files:
                 lfdate_to_status_files[lf.date] = []
             lfdate_to_status_files[lf.date].append(lf.status)
@@ -117,7 +117,9 @@ def update_date_status_table():
 
             try:
                 existing_date_status = db_session.query(DateStatus).filter(DateStatus.date == key).one()
-                existing_date_status.status = new_status
+                if new_status != existing_date_status.status:
+                    if existing_date_status.status in ['queue', 'partial']:
+                        existing_date_status.status = new_status
 
             except NoResultFound:
                 new_ds = DateStatus()
