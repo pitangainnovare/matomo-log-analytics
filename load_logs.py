@@ -11,7 +11,7 @@ from models.declarative import LogFile, LogFileSummary
 from update_available_logs import update_date_status_table
 
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
-DIR_WORKING_LOADED_LOGS = os.environ.get('DIR_WORKING_LOADED_LOGS', '.')
+DIR_LOADED_LOGS = os.environ.get('DIR_LOADED_LOGS', '.')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 COLLECTION = os.environ.get('COLLECTION', 'scl')
@@ -44,7 +44,7 @@ def _generate_import_logs_params(in_file_path, out_file_path):
                     '--idsite': MATOMO_ID_SITE,
                     '--recorders': MATOMO_RECORDERS,
                     '--token-auth': MATOMO_API_TOKEN,
-                    '--output': os.path.join(DIR_WORKING_LOADED_LOGS, out_file_path)}
+                    '--output': os.path.join(DIR_LOADED_LOGS, out_file_path)}
 
     return ' '.join(map('='.join, matomo_attrs.items())) + ' ' + in_file_path
 
@@ -119,8 +119,8 @@ if __name__ == '__main__':
                         format='[%(asctime)s] %(levelname)s %(message)s',
                         datefmt='%d/%b/%Y %H:%M:%S')
 
-    if not os.path.exists(DIR_WORKING_LOADED_LOGS):
-        os.makedirs(DIR_WORKING_LOADED_LOGS)
+    if not os.path.exists(DIR_LOADED_LOGS):
+        os.makedirs(DIR_LOADED_LOGS)
 
     files = get_files()
 
@@ -144,7 +144,7 @@ if __name__ == '__main__':
         subprocess.call('python2 libs/import_logs.py' + ' ' + import_logs_params, shell=True)
 
         logging.info('Updating log_file_summary with %s' % summary_path_output)
-        full_path_summary_output = os.path.join(DIR_WORKING_LOADED_LOGS, summary_path_output)
+        full_path_summary_output = os.path.join(DIR_LOADED_LOGS, summary_path_output)
         status = update_log_file_summary_table(full_path_summary_output, expected_lines=total_lines, file_name=file_name)
 
         if status == 'completed':
