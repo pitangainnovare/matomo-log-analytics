@@ -3,14 +3,17 @@ import logging
 import os
 
 from libs.lib_database import extract_pretable, get_dates_able_to_extract, set_date_status
+from libs.lib_status import DATE_STATUS_PRETABLE
 
 
-COLLECTION = os.environ.get('COLLECTION', 'scl')
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
 DIR_PRETABLES = os.environ.get('DIR_PRETABLES', '.')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
+
+COLLECTION = os.environ.get('COLLECTION', 'scl')
+MAX_PRETABLE_DAYS = os.environ.get('MAX_PRETABLE_DAYS', 10)
+
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
-NUMBER_OF_DAYS = os.environ.get('NUMBER_OF_DAYS', 10)
 
 
 def save_pretable(str_date, query_result_data):
@@ -41,7 +44,7 @@ def main():
     if not os.path.exists(DIR_PRETABLES):
         os.makedirs(DIR_PRETABLES)
 
-    dates = get_dates_able_to_extract(LOG_FILE_DATABASE_STRING, COLLECTION, NUMBER_OF_DAYS)
+    dates = get_dates_able_to_extract(LOG_FILE_DATABASE_STRING, COLLECTION, MAX_PRETABLE_DAYS)
 
     logging.info('There are %d dates to be extracted', len(dates))
 
@@ -53,7 +56,7 @@ def main():
         query_result_data = extract_pretable(LOG_FILE_DATABASE_STRING, d)
         save_pretable(str_date, query_result_data)
 
-        set_date_status(LOG_FILE_DATABASE_STRING, d, 'pretable')
+        set_date_status(LOG_FILE_DATABASE_STRING, d, DATE_STATUS_PRETABLE)
 
 
 if __name__ == '__main__':
