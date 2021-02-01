@@ -57,7 +57,3 @@ def main():
         save_pretable(str_date, query_result_data)
 
         set_date_status(LOG_FILE_DATABASE_STRING, d, DATE_STATUS_PRETABLE)
-
-
-if __name__ == '__main__':
-    main()

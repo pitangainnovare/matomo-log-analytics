@@ -86,7 +86,7 @@ def count_total_lines(log_file):
     return -1
 
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=LOGGING_LEVEL,
                         format='[%(asctime)s] %(levelname)s %(message)s',
                         datefmt='%d/%b/%Y %H:%M:%S')

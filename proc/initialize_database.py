@@ -35,7 +35,3 @@ def main():
 
     logging.info('Criando tabelas control_log_file, control_log_file_summary e control_log_file_date_status')
     lib_database.create_tables(params.database_uri)
-
-
-if __name__ == '__main__':
-    main()

@@ -36,7 +36,7 @@ def copy_available_log_files(database_uri, collection, dir_working_logs, copy_fi
                 shutil.copy(source, target)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
