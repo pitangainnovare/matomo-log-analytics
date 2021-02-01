@@ -67,10 +67,21 @@ def get_dates_able_to_extract(database_uri, collection, number_of_days):
 
     db_session = get_db_session(database_uri)
     try:
-        ds_results = db_session.query(DateStatus).filter(DateStatus.collection == collection).filter(DateStatus.status == DATE_STATUS_LOADED).order_by(DateStatus.date).limit(number_of_days)
+        ds_results = db_session.query(DateStatus).filter(DateStatus.collection == collection).filter(DateStatus.status == DATE_STATUS_LOADED).order_by(DateStatus.date)
+        all_days = sorted([d.date for d in ds_results])
 
-        for ds in ds_results:
-            dates.append(ds.date)
+        days_counter = 0
+        for a in all_days:
+            previous_day = a + timedelta(days=-1)
+            next_day = a + timedelta(days=1)
+
+            if previous_day in all_days and next_day in all_days:
+                dates.append(a)
+                days_counter += 1
+
+                if days_counter >= number_of_days:
+                    break
+
     except NoResultFound:
         logging.info('There are no dates to be extracted')
 
