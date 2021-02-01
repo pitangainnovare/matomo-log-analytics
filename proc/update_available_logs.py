@@ -8,9 +8,9 @@ from libs.lib_database import update_available_log_files, update_date_status, ge
 from libs.lib_file_name import FILE_GUNZIPPED_LOG_EXTENSION
 
 
-DIRS_USAGE_LOGS = os.environ.get('DIRS_USAGE_LOGS', '/logs_hiperion,/logs_node03').split(',')
-DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
-LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
+DIRS_USAGE_LOGS = os.environ.get('DIRS_USAGE_LOGS', '/app/usage-logs/hiperion-logs,/app/usage-logs/node03-logs').split(',')
+DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
+LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
 COPY_FILES_LIMIT = int(os.environ.get('COPY_FILES_LIMIT', 10))
 COLLECTION = os.environ.get('COLLECTION', 'scl')

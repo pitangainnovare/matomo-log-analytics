@@ -8,7 +8,7 @@ sys.path.append('')
 from libs import lib_database
 
 
-LOGS_FILES_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/database')
+LOGS_FILES_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
 
 def main():
