@@ -21,6 +21,14 @@ def save_pretable(str_date, query_result_data):
     pretable_full_path = os.path.join(DIR_PRETABLES, str_date_with_extension)
     try:
         with open(pretable_full_path, 'w') as f:
+            f.write('\t'.join(['serverTime',
+                               'browserName',
+                               'browserVersion',
+                               'ip',
+                               'latitude',
+                               'longitude',
+                               'actionName']) + '\n')
+
             for i in query_result_data:
                 timestamp = i.serverTime.strftime("%Y-%m-%d %H:%M:%S")
                 browser_name = i.browserName if i.browserName else 'NULL'
