@@ -6,9 +6,9 @@ from libs.lib_database import extract_pretable, get_dates_able_to_extract, set_d
 from libs.lib_status import DATE_STATUS_PRETABLE
 
 
-DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
-DIR_PRETABLES = os.environ.get('DIR_PRETABLES', '.')
-LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
+DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
+DIR_PRETABLES = os.environ.get('DIR_PRETABLES', '/app/data/pretables')
+LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
 COLLECTION = os.environ.get('COLLECTION', 'scl')
 MAX_PRETABLE_DAYS = os.environ.get('MAX_PRETABLE_DAYS', 10)
@@ -57,7 +57,3 @@ def main():
         save_pretable(str_date, query_result_data)
 
         set_date_status(LOG_FILE_DATABASE_STRING, d, DATE_STATUS_PRETABLE)
-
-
-if __name__ == '__main__':
-    main()

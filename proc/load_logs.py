@@ -20,17 +20,17 @@ from libs.lib_file_name import (
 from libs.lib_status import LOG_FILE_STATUS_LOADING
 
 
-DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '.')
-DIR_SUMMARY = os.environ.get('DIR_SUMMARY', '.')
-LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/logs_files')
+DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
+DIR_SUMMARY = os.environ.get('DIR_SUMMARY', '/app/data/summary')
+LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
-LOAD_FILES_LIMIT = int(os.environ.get('LOAD_FILES_LIMIT', 4))
+LOAD_FILES_LIMIT = int(os.environ.get('LOAD_FILES_LIMIT', 10))
 COLLECTION = os.environ.get('COLLECTION', 'scl')
 MATOMO_ID_SITE = os.environ.get('MATOMO_ID_SITE', '1')
 MATOMO_API_TOKEN = os.environ.get('MATOMO_API_TOKEN', 'e536004d5816c66e10e23a80fbd57911')
-MATOMO_URL = os.environ.get('MATOMO_URL', 'http://172.17.0.4')
+MATOMO_URL = os.environ.get('MATOMO_URL', 'http://localhost')
 MATOMO_RECORDERS = os.environ.get('MATOMO_RECORDERS', '12')
-RETRY_DIFF_LINES = os.environ.get('RETRY_DIFF_LINES', '100000')
+RETRY_DIFF_LINES = os.environ.get('RETRY_DIFF_LINES', '110000')
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
@@ -71,6 +71,8 @@ def generate_import_logs_params(in_file_path, out_file_path, start_line):
 
     params = ' '.join(map('='.join, matomo_attrs.items()))
 
+    params += ' --show-progress'
+
     if start_line > 0:
         params += ' --skip=' + str(start_line)
 
@@ -86,7 +88,7 @@ def count_total_lines(log_file):
     return -1
 
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=LOGGING_LEVEL,
                         format='[%(asctime)s] %(levelname)s %(message)s',
                         datefmt='%d/%b/%Y %H:%M:%S')
