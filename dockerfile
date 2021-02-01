@@ -8,14 +8,17 @@ RUN cd /src \
 FROM python:2.7-alpine
 MAINTAINER scielo-dev@googlegroups.com
 
-COPY . /app
+COPY --from=build /deps/* /deps/
+COPY requirements.txt .
+
+RUN apk add --no-cache --virtual .build-deps gcc g++ \
+    && apk add --no-cache mariadb-dev \
+    && pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-index --find-links=file:///deps -U scielo-matomo-manager \
+    && apk --purge del .build-deps \
+    && rm -rf /deps
 
 WORKDIR /app
-
-RUN apk add --update \
-    && apk add gcc g++ mariadb-dev \
-    && pip install --upgrade pip
-
-RUN python setup.py install
 
 CMD ["update_available_logs", "--help"]

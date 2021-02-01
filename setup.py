@@ -9,13 +9,13 @@ install_requires = [
 
 setup(
     name="scielo-matomo-manager",
-    version='1.0',
+    version='0.1',
     description="The SciELO Matomo Manager",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
     license="BSD",
     url="https://github.com/scieloorg/matomo-log-analytics",
-    keywords='usage access',
+    keywords='log manager',
     maintainer_email='rafael.pezzuto@gmail.com',
     packages=find_packages(),
     install_requires=install_requires,
