@@ -189,7 +189,8 @@ def update_date_status(database_uri, collection):
                 new_ds.date = key
                 new_ds.collection = collection
 
-                db_session.add(new_ds)
+                if new_ds.date:
+                    db_session.add(new_ds)
     except NoResultFound:
         logging.error('There are no log files registered in the table log_file')
 
