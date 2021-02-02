@@ -5,7 +5,7 @@ import os
 from libs.lib_status import LOG_FILE_STATUS_PARTIAL, LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_FAILED
 
 
-RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '100000'))
+RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '110000'))
 
 SUMMARY_ATTRIBUTES = sorted(['filtered_log_lines',
                              'http_errors',
@@ -33,7 +33,7 @@ for attr in SUMMARY_ATTRIBUTES:
 def _extract_summary_data(data, expected_total_lines):
     extracted_data = {}
     for a in SUMMARY_ATTRIBUTES:
-        extracted_data[a] = ''
+        extracted_data[a] = 0
 
     _extract_main_values(reversed(data), extracted_data)
     _extract_total_time(reversed(data), extracted_data)
@@ -54,26 +54,17 @@ def _extract_total_time(data, extracted_data):
 
 
 def _extract_status_and_lines_parsed(data, extracted_data, expected_lines):
-    ris = extracted_data.get('requests_imported_successfully')
-    li = extracted_data.get('requests_ignored')
-
-    imported_lines = ris if ris else 0
-    lines_ignored = li if li else 0
+    imported_lines = extracted_data.get('requests_imported_successfully')
+    lines_ignored = extracted_data.get('requests_ignored')
 
     sum_imported_ignored_lines = imported_lines + lines_ignored
+    extracted_data['sum_imported_ignored_lines'] = sum_imported_ignored_lines
 
     if sum_imported_ignored_lines == expected_lines:
         extracted_data['status'] = LOG_FILE_STATUS_LOADED
-        extracted_data['sum_imported_ignored_lines'] = sum_imported_ignored_lines
         extracted_data['lines_parsed'] = sum_imported_ignored_lines
-        return
-
-    if 0 <= sum_imported_ignored_lines < expected_lines:
-        extracted_data['sum_imported_ignored_lines'] = sum_imported_ignored_lines
     else:
-        extracted_data['sum_imported_ignored_lines'] = 0
-
-    _extract_values_failure_summary(data, extracted_data, expected_lines)
+        _extract_values_failure_summary(data, extracted_data, expected_lines)
 
 
 def _extract_values_failure_summary(data, extracted_data, expected_lines):
