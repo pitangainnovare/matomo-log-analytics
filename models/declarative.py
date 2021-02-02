@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey
+from sqlalchemy import Column, Date, DateTime, ForeignKey, BIGINT
 from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -14,7 +14,7 @@ class LogFile(Base):
     full_path = Column(VARCHAR(255), nullable=False, unique=True)
     name = Column(VARCHAR(255), nullable=False)
     created_at = Column(DateTime, nullable=False)
-    size = Column(INTEGER, nullable=False)
+    size = Column(BIGINT, nullable=False)
     server = Column(VARCHAR(255), nullable=False)
     date = Column(Date, nullable=False, index=True)
     status = Column(INTEGER, default=0)
