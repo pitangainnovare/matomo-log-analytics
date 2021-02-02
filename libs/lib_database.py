@@ -123,22 +123,23 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
             server = extract_log_server_name(file)
             date = extract_log_date(file)
 
-            try:
-                existing_log_file = db_session.query(LogFile).filter(LogFile.full_path == file).one()
-            except NoResultFound:
-                lf = LogFile()
-                lf.full_path = file
-                lf.created_at = datetime.datetime.fromtimestamp(os.stat(file).st_ctime)
-                lf.size = os.stat(file).st_size
-                lf.server = server
-                lf.date = date
-                lf.name = extract_log_file_name(server, date)
-                lf.status = LOG_FILE_STATUS_QUEUE
-                lf.collection = collection
+            if server and date:
+                try:
+                    existing_log_file = db_session.query(LogFile).filter(LogFile.full_path == file).one()
+                except NoResultFound:
+                    lf = LogFile()
+                    lf.full_path = file
+                    lf.created_at = datetime.datetime.fromtimestamp(os.stat(file).st_ctime)
+                    lf.size = os.stat(file).st_size
+                    lf.server = server
+                    lf.date = date
+                    lf.name = extract_log_file_name(server, date)
+                    lf.status = LOG_FILE_STATUS_QUEUE
+                    lf.collection = collection
 
-                db_session.add(lf)
-                db_session.commit()
-                logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
+                    db_session.add(lf)
+                    db_session.commit()
+                    logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
 
 
 def update_log_file_status(database_uri, collection, file_name, status):
