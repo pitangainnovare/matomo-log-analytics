@@ -16,7 +16,7 @@ from libs.lib_summary import parse_summary
 from models.declarative import Base, DateStatus, LogFile, LogFileSummary
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 
@@ -144,6 +144,8 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
                     try:
                         db_session.commit()
                     except OperationalError as e:
+                        logging.error(e)
+                    except InvalidRequestError as e:
                         logging.error(e)
 
 
