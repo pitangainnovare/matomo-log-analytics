@@ -143,7 +143,7 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
 
                     try:
                         db_session.commit()
-                    except sqlalchemy.exc.OperationalError as e:
+                    except OperationalError as e:
                         logging.error(e)
 
 
