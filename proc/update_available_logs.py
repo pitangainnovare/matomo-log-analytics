@@ -8,7 +8,8 @@ from libs.lib_database import update_available_log_files, update_date_status, ge
 from libs.lib_file_name import FILE_GUNZIPPED_LOG_EXTENSION
 
 
-DIRS_USAGE_LOGS = os.environ.get('DIRS_USAGE_LOGS', '/app/usage-logs/hiperion-logs,/app/usage-logs/node03-logs').split(',')
+DIR_USAGE_LOGS_1 = os.environ.get('DIR_USAGE_LOGS_1', '/app/usage-logs-1')
+DIR_USAGE_LOGS_2 = os.environ.get('DIR_USAGE_LOGS_2', '/app/usage-logs-2')
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
@@ -57,8 +58,9 @@ def main():
         os.makedirs(DIR_WORKING_LOGS)
 
     if 'update_log_file' in params.exec_mode:
-        logging.info('Updating table log_file')
-        update_available_log_files(LOG_FILE_DATABASE_STRING, DIRS_USAGE_LOGS, COLLECTION)
+        for dir_log in [DIR_USAGE_LOGS_1, DIR_USAGE_LOGS_2]:
+            logging.info('Updating table log_file with possible new logs in %s' % dir_log)
+            update_available_log_files(LOG_FILE_DATABASE_STRING, dir_log, COLLECTION)
 
     if 'copy_logs' in params.exec_mode:
         copy_available_log_files(LOG_FILE_DATABASE_STRING, COLLECTION, DIR_WORKING_LOGS, COPY_FILES_LIMIT)
