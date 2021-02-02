@@ -12,6 +12,7 @@ FILE_INFO_UNDEFINED = ''
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
 FILE_GUNZIPPED_LOG_EXTENSION = '.gz'
 REGEX_DATE = r'\d{4}-\d{2}-\d{2}'
+REGEX_DATE_NO_HYPHEN = r'[1-2]{1}\d{3}[0-1]{1}\d{1}\d{2}'
 
 
 def extract_log_server_name(full_path):
@@ -25,16 +26,29 @@ def extract_log_server_name(full_path):
     return FILE_INFO_UNDEFINED
 
 
-def extract_log_date(full_path):
-    matched_date = re.search(REGEX_DATE, full_path)
-    if matched_date:
-        date_value_str = matched_date.group()
+def _detect_date_full_path(regex, full_path):
+    match = re.search(regex, full_path)
+    if match:
+        return match.group()
+    return ''
 
-        try:
-            datetime.datetime.strptime(date_value_str, '%Y-%m-%d')
-            return matched_date.group()
-        except ValueError:
-            return FILE_INFO_UNDEFINED
+
+def _try_create_date_from_str(date_str, fmt):
+    try:
+        return datetime.datetime.strptime(date_str, fmt)
+    except ValueError:
+        return ''
+
+
+def extract_log_date(full_path):
+    for regex_format in [(REGEX_DATE, '%Y-%m-%d'), (REGEX_DATE_NO_HYPHEN, '%Y%m%d')]:
+        regex, format = regex_format
+
+        date_str = _detect_date_full_path(regex, full_path)
+
+        valid_date = _try_create_date_from_str(date_str, format)
+        if valid_date:
+            return valid_date.strftime('%Y-%m-%d')
 
     return FILE_INFO_UNDEFINED
 
