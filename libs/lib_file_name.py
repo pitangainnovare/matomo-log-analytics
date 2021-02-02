@@ -7,6 +7,7 @@ FILE_HIPERION_NAME = 'hiperion'
 FILE_HIPERION_APACHE_NAME = 'hiperion-apache'
 FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
 FILE_VARNISH_NAME = 'varnish'
+FILE_INFO_UNDEFINED = ''
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
 FILE_GUNZIPPED_LOG_EXTENSION = '.gz'
 REGEX_DATE = r'\d{4}-\d{2}-\d{2}'
@@ -20,12 +21,14 @@ def extract_log_server_name(full_path):
             return FILE_HIPERION_APACHE_NAME
         if FILE_VARNISH_NAME in full_path:
             return FILE_HIPERION_VARNISH_NAME
+    return FILE_INFO_UNDEFINED
 
 
 def extract_log_date(full_path):
     matched_date = re.search(REGEX_DATE, full_path)
     if matched_date:
         return matched_date.group()
+    return FILE_INFO_UNDEFINED
 
 
 def extract_log_file_name(server, date):
