@@ -1,3 +1,6 @@
+# coding=utf-8
+import datetime
+
 DATE_STATUS_QUEUE = 0
 DATE_STATUS_PARTIAL = 1
 DATE_STATUS_LOADED = 2
@@ -10,6 +13,7 @@ LOG_FILE_STATUS_PARTIAL = 1
 LOG_FILE_STATUS_LOADED = 2
 LOG_FILE_STATUS_LOADING = 9
 LOG_FILE_STATUS_FAILED = -1
+LOG_FILE_STATUS_INVALID = -9
 
 DATE_STATUS_SUM_FOR_LOADED = 2
 
@@ -26,3 +30,19 @@ def compute_date_status(logfile_status_list):
         return DATE_STATUS_PARTIAL
 
     return DATE_STATUS_QUEUE
+
+
+def is_valid_log(log_file_full_path, log_file_server, log_file_date):
+    date = datetime.datetime.strptime(log_file_date, '%Y-%m-%d')
+
+    # Situação em que arquivo com prefixo varnishncsa contém IPs anônimos
+    if 'varnishncsa' in log_file_full_path:
+        if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
+            return False
+
+    # Situação em que arquivo de servidor hiperion-apache contém IPs anônimos
+    if log_file_server == 'hiperion-apache':
+        if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
+            return False
+
+    return True
