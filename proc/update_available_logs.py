@@ -24,7 +24,7 @@ def copy_available_log_files(database_uri, collection, dir_working_logs, copy_fi
 
     recent_files = get_recent_log_files(database_uri, collection, ignore_loaded=True)
 
-    for rf in sorted(recent_files.limit(copy_files_limit), key=lambda x: x.name):
+    for rf in recent_files.limit(copy_files_limit):
         rf_name_gz = rf.name + FILE_GUNZIPPED_LOG_EXTENSION
         if rf_name_gz not in current_files:
             source = rf.full_path

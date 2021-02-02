@@ -39,18 +39,18 @@ def get_available_log_files(database_uri, collection, dir_working_logs, load_fil
     files_names = set([f for f in os.listdir(dir_working_logs) if os.path.isfile(os.path.join(dir_working_logs, f))])
 
     db_files = get_recent_log_files(database_uri, collection, ignore_loaded=True)
-    db_files_with_start_lines = set([(ef.id, ef.name, get_lines_parsed(database_uri, ef.id)) for ef in db_files])
+    db_files_with_start_lines = set([(ef.id, ef.name, ef.date, get_lines_parsed(database_uri, ef.id)) for ef in db_files])
 
     available_lf = set()
 
     file_counter = 0
     for i in db_files_with_start_lines:
-        id, name, start_line = i
+        id, name, date, start_line = i
 
         gz_name = extract_gunzipped_file_name(name)
         full_path_gz_name = os.path.join(dir_working_logs, gz_name)
 
-        alf = (id, full_path_gz_name, start_line)
+        alf = (id, full_path_gz_name, date, start_line)
 
         if gz_name in files_names:
             available_lf.add(alf)
@@ -59,7 +59,7 @@ def get_available_log_files(database_uri, collection, dir_working_logs, load_fil
             if file_counter >= load_files_limit:
                 break
 
-    return sorted(available_lf, key=lambda x: x[1])
+    return sorted(available_lf, key=lambda x: x[2], reverse=True)
 
 
 def generate_import_logs_params(in_file_path, out_file_path, start_line):
@@ -98,8 +98,8 @@ def main():
 
     files = get_available_log_files(LOG_FILE_DATABASE_STRING, COLLECTION, DIR_WORKING_LOGS, LOAD_FILES_LIMIT)
 
-    for file_data in files:
-        file_id, file_path, start_line = file_data
+    for file_attrs in files:
+        file_id, file_path, file_date, start_line = file_attrs
         time_start = time.time()
 
         logging.info('Uncompressing %s' % file_path)
