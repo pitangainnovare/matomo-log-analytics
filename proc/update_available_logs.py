@@ -4,6 +4,8 @@ import logging
 import os
 import shutil
 
+from libs.lib_status import LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
+
 from libs.lib_database import update_available_log_files, update_date_status, get_recent_log_files
 from libs.lib_file_name import FILE_GUNZIPPED_LOG_EXTENSION
 
@@ -22,7 +24,7 @@ LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 def copy_available_log_files(database_uri, collection, dir_working_logs, copy_files_limit):
     current_files = os.listdir(dir_working_logs)
 
-    recent_files = get_recent_log_files(database_uri, collection, ignore_loaded=True)
+    recent_files = get_recent_log_files(database_uri, collection, [LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
 
     for rf in recent_files.limit(copy_files_limit):
         rf_name_gz = rf.name + FILE_GUNZIPPED_LOG_EXTENSION

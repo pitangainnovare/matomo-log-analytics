@@ -10,7 +10,7 @@ from libs.lib_status import (
     DATE_STATUS_QUEUE,
     LOG_FILE_STATUS_QUEUE,
     DATE_STATUS_LOADED,
-    LOG_FILE_STATUS_LOADED
+    LOG_FILE_STATUS_LOADED, is_valid_log, LOG_FILE_STATUS_INVALID
 )
 from libs.lib_summary import parse_summary
 from models.declarative import Base, DateStatus, LogFile, LogFileSummary
@@ -33,11 +33,9 @@ def get_db_session(database_uri):
     return db_session()
 
 
-def get_recent_log_files(database_uri, collection, ignore_loaded=False):
+def get_recent_log_files(database_uri, collection, ignore_status_list):
     db_session = get_db_session(database_uri)
-    if ignore_loaded:
-        return db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.status != LOG_FILE_STATUS_LOADED).order_by(LogFile.date.desc())
-    return db_session.query(LogFile).filter(LogFile.collection == collection).order_by(LogFile.date.desc())
+    return db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.status.notin_(ignore_status_list)).order_by(LogFile.date.desc())
 
 
 def set_date_status(database_uri, date, status):
@@ -137,11 +135,16 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
                     lf.status = LOG_FILE_STATUS_QUEUE
                     lf.collection = collection
 
+                    if not is_valid_log(lf.full_path, lf.server, lf.date):
+                        lf.status = LOG_FILE_STATUS_INVALID
+                        logging.warning('LogFile row created, but will not be loaded due to unmet requirements: %s' % file)
+                    else:
+                        logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
+
                     db_session.add(lf)
                     db_session.commit()
-                    logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
             else:
-                logging.warning('LogFile ignored: %s' % file)
+                logging.warning('LogFile ignored due to invalid date and server: %s' % file)
 
 
 def update_log_file_status(database_uri, collection, file_name, status):

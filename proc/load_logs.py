@@ -17,8 +17,7 @@ from libs.lib_file_name import (
     FILE_GUNZIPPED_LOG_EXTENSION,
     extract_gunzipped_file_name
 )
-from libs.lib_status import LOG_FILE_STATUS_LOADING
-
+from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
 
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
 DIR_SUMMARY = os.environ.get('DIR_SUMMARY', '/app/data/summary')
@@ -38,7 +37,7 @@ LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 def get_available_log_files(database_uri, collection, dir_working_logs, load_files_limit):
     files_names = set([f for f in os.listdir(dir_working_logs) if os.path.isfile(os.path.join(dir_working_logs, f))])
 
-    db_files = get_recent_log_files(database_uri, collection, ignore_loaded=True)
+    db_files = get_recent_log_files(database_uri, collection, [LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
     db_files_with_start_lines = set([(ef.id, ef.name, ef.date, get_lines_parsed(database_uri, ef.id)) for ef in db_files])
 
     available_lf = set()
