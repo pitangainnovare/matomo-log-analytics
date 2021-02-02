@@ -1,3 +1,4 @@
+import datetime
 import re
 
 
@@ -27,7 +28,14 @@ def extract_log_server_name(full_path):
 def extract_log_date(full_path):
     matched_date = re.search(REGEX_DATE, full_path)
     if matched_date:
-        return matched_date.group()
+        date_value_str = matched_date.group()
+
+        try:
+            datetime.datetime.strptime(date_value_str, '%Y-%m-%d')
+            return matched_date.group()
+        except ValueError:
+            return FILE_INFO_UNDEFINED
+
     return FILE_INFO_UNDEFINED
 
 
