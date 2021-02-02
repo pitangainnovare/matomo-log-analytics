@@ -16,6 +16,7 @@ from libs.lib_summary import parse_summary
 from models.declarative import Base, DateStatus, LogFile, LogFileSummary
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 
@@ -140,6 +141,8 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
                     db_session.add(lf)
                     db_session.commit()
                     logging.info('LogFile row created: (%s, %s)' % (lf.full_path, lf.created_at.strftime('%y-%m-%d %H:%M:%S')))
+                except sqlalchemy.exc.OperationalError as e:
+                    logging.error(e)
 
 
 def update_log_file_status(database_uri, collection, file_name, status):
