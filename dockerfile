@@ -10,6 +10,7 @@ MAINTAINER scielo-dev@googlegroups.com
 
 COPY --from=build /deps/* /deps/
 COPY requirements.txt .
+COPY import_logs.py /app/import_logs.py
 
 RUN apk add --no-cache --virtual .build-deps gcc g++ \
     && apk add --no-cache mariadb-dev \

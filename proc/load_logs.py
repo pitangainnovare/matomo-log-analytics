@@ -117,7 +117,7 @@ def main():
         logging.info('Loading %s' % gunzipped_file_path)
         update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_name, LOG_FILE_STATUS_LOADING)
         import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
-        subprocess.call('python2 libs/import_logs.py' + ' ' + import_logs_params, shell=True)
+        subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
 
         logging.info('Updating log_file_summary with %s' % summary_path_output)
         full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
