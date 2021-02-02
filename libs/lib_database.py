@@ -36,8 +36,8 @@ def get_db_session(database_uri):
 def get_recent_log_files(database_uri, collection, ignore_loaded=False):
     db_session = get_db_session(database_uri)
     if ignore_loaded:
-        return db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.status != LOG_FILE_STATUS_LOADED).order_by(LogFile.created_at)
-    return db_session.query(LogFile).filter(LogFile.collection == collection).order_by(LogFile.created_at)
+        return db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.status != LOG_FILE_STATUS_LOADED).order_by(LogFile.date.desc())
+    return db_session.query(LogFile).filter(LogFile.collection == collection).order_by(LogFile.date.desc())
 
 
 def set_date_status(database_uri, date, status):
@@ -67,8 +67,8 @@ def get_dates_able_to_extract(database_uri, collection, number_of_days):
 
     db_session = get_db_session(database_uri)
     try:
-        ds_results = db_session.query(DateStatus).filter(DateStatus.collection == collection).filter(DateStatus.status == DATE_STATUS_LOADED).order_by(DateStatus.date)
-        all_days = sorted([d.date for d in ds_results])
+        ds_results = db_session.query(DateStatus).filter(DateStatus.collection == collection).filter(DateStatus.status == DATE_STATUS_LOADED).order_by(DateStatus.date.desc())
+        all_days = [d.date for d in ds_results]
 
         days_counter = 0
         for a in all_days:
@@ -95,7 +95,7 @@ def get_log_file_by_status(database_uri, collection, status):
 
 def get_log_file_summary_last_line(database_uri, collection, date):
     db_session = get_db_session(database_uri)
-    return db_session.query(LogFileSummary).join(LogFileSummary.idlogfile == LogFile.id).filter(LogFile.collection == collection).filter(LogFile.date == date).order_by(LogFileSummary.lines_parsed, reversed)
+    return db_session.query(LogFileSummary).join(LogFileSummary.idlogfile == LogFile.id).filter(LogFile.collection == collection).filter(LogFile.date == date).order_by(LogFileSummary.lines_parsed.desc())
 
 
 def get_lines_parsed(database_uri, log_file_id):
