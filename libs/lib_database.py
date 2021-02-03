@@ -147,14 +147,14 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
                 logging.warning('LogFile ignored due to invalid date and server: %s' % file)
 
 
-def update_log_file_status(database_uri, collection, file_name, status):
+def update_log_file_status(database_uri, collection, file_id, status):
     db_session = get_db_session(database_uri)
 
     try:
-        log_file_row = db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.name == file_name).one()
+        log_file_row = db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.id == file_id).one()
         if log_file_row.status != status:
             if log_file_row.status != LOG_FILE_STATUS_LOADED:
-                logging.info('Changing status of %s from %s to %s' % (file_name, log_file_row.status, status))
+                logging.info('Changing status of control_log_file.id=%s from %s to %s' % (file_id, log_file_row.status, status))
                 log_file_row.status = status
     except NoResultFound:
         pass
