@@ -65,16 +65,19 @@ def get_dates_able_to_extract(database_uri, collection, number_of_days):
 
     db_session = get_db_session(database_uri)
     try:
-        ds_results = db_session.query(DateStatus).filter(DateStatus.collection == collection).filter(DateStatus.status == DATE_STATUS_LOADED).order_by(DateStatus.date.desc())
-        all_days = [d.date for d in ds_results]
+        ds_results = db_session.query(DateStatus).filter(DateStatus.collection == collection).filter(DateStatus.status >= DATE_STATUS_LOADED).order_by(DateStatus.date.desc())
+
+        date_to_status = {}
+        for r in ds_results:
+            date_to_status[r.date] = r.status
 
         days_counter = 0
-        for a in all_days:
-            previous_day = a + timedelta(days=-1)
-            next_day = a + timedelta(days=1)
+        for date, status in date_to_status.items():
+            previous_day = date + timedelta(days=-1)
+            next_day = date + timedelta(days=1)
 
-            if previous_day in all_days and next_day in all_days:
-                dates.append(a)
+            if status == DATE_STATUS_LOADED and previous_day in date_to_status and next_day in date_to_status:
+                dates.append(date)
                 days_counter += 1
 
                 if days_counter >= number_of_days:
