@@ -12,10 +12,9 @@ from libs.lib_database import (
     get_recent_log_files
 )
 from libs.lib_file_name import (
-    extract_summary_file_name,
-    extract_file_name,
+    add_summary_extension,
     FILE_GUNZIPPED_LOG_EXTENSION,
-    extract_gunzipped_file_name
+    add_gunzip_extension
 )
 from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
 
@@ -37,19 +36,22 @@ LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 def get_available_log_files(database_uri, collection, dir_working_logs, load_files_limit):
     files_names = set([f for f in os.listdir(dir_working_logs) if os.path.isfile(os.path.join(dir_working_logs, f))])
 
-    db_files = get_recent_log_files(database_uri, collection, [LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
-    db_files_with_start_lines = set([(ef.id, ef.name, ef.date, get_lines_parsed(database_uri, ef.id)) for ef in db_files])
+    db_files = get_recent_log_files(database_uri,
+                                    collection,
+                                    ignore_status_list=[LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
+
+    db_files_with_start_lines = [(db_f.id, db_f.name, get_lines_parsed(database_uri, db_f.id)) for db_f in db_files]
 
     available_lf = set()
 
     file_counter = 0
     for i in db_files_with_start_lines:
-        id, name, date, start_line = i
+        id, name, start_line = i
 
-        gz_name = extract_gunzipped_file_name(name)
+        gz_name = add_gunzip_extension(name)
         full_path_gz_name = os.path.join(dir_working_logs, gz_name)
 
-        alf = (id, full_path_gz_name, date, start_line)
+        alf = (id, full_path_gz_name, start_line)
 
         if gz_name in files_names:
             available_lf.add(alf)
@@ -58,7 +60,7 @@ def get_available_log_files(database_uri, collection, dir_working_logs, load_fil
             if file_counter >= load_files_limit:
                 break
 
-    return sorted(available_lf, key=lambda x: x[2], reverse=True)
+    return available_lf
 
 
 def generate_import_logs_params(in_file_path, out_file_path, start_line):
@@ -98,7 +100,7 @@ def main():
     files = get_available_log_files(LOG_FILE_DATABASE_STRING, COLLECTION, DIR_WORKING_LOGS, LOAD_FILES_LIMIT)
 
     for file_attrs in files:
-        file_id, file_path, file_date, start_line = file_attrs
+        file_id, file_path, start_line = file_attrs
         time_start = time.time()
 
         logging.info('Uncompressing %s' % file_path)
@@ -107,14 +109,13 @@ def main():
             exit(1)
         subprocess.call('gunzip %s' % file_path, shell=True)
         gunzipped_file_path = file_path.replace(FILE_GUNZIPPED_LOG_EXTENSION, '')
-        file_name = extract_file_name(gunzipped_file_path)
 
-        summary_path_output = extract_summary_file_name(gunzipped_file_path)
+        summary_path_output = add_summary_extension(gunzipped_file_path)
 
         total_lines = count_total_lines(gunzipped_file_path)
 
         logging.info('Loading %s' % gunzipped_file_path)
-        update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_name, LOG_FILE_STATUS_LOADING)
+        update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
         import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
         subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
 
@@ -125,8 +126,8 @@ def main():
         logging.info('Removing file %s' % gunzipped_file_path)
         os.remove(gunzipped_file_path)
 
-        logging.info('Updating log_file for row %s' % file_name)
-        update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_name, status)
+        logging.info('Updating log_file for row %s' % file_id)
+        update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, status)
 
         logging.info('Updating date_status')
         update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)

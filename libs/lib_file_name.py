@@ -1,5 +1,6 @@
 import datetime
 import re
+import os
 
 
 FILE_APACHE_NAME = 'apache'
@@ -58,13 +59,15 @@ def extract_log_file_name(server, date):
     return file_name
 
 
-def extract_summary_file_name(file_path):
+def add_summary_extension(file_path):
     return extract_file_name(file_path) + FILE_SUMMARY_POSFIX_EXTENSION
 
 
-def extract_gunzipped_file_name(file_name):
+def add_gunzip_extension(file_name):
     return file_name + FILE_GUNZIPPED_LOG_EXTENSION
 
 
 def extract_file_name(file_path):
-    return file_path.split('/')[-1]
+    head_tail = os.path.split(file_path)
+    file_name = head_tail[1]
+    return file_name
