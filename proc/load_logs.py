@@ -12,10 +12,9 @@ from libs.lib_database import (
     get_recent_log_files
 )
 from libs.lib_file_name import (
-    extract_summary_file_name,
-    extract_file_name,
+    add_summary_extension,
     FILE_GUNZIPPED_LOG_EXTENSION,
-    extract_gunzipped_file_name
+    add_gunzip_extension
 )
 from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
 
@@ -46,7 +45,7 @@ def get_available_log_files(database_uri, collection, dir_working_logs, load_fil
     for i in db_files_with_start_lines:
         id, name, date, start_line = i
 
-        gz_name = extract_gunzipped_file_name(name)
+        gz_name = add_gunzip_extension(name)
         full_path_gz_name = os.path.join(dir_working_logs, gz_name)
 
         alf = (id, full_path_gz_name, date, start_line)
@@ -107,9 +106,8 @@ def main():
             exit(1)
         subprocess.call('gunzip %s' % file_path, shell=True)
         gunzipped_file_path = file_path.replace(FILE_GUNZIPPED_LOG_EXTENSION, '')
-        file_name = extract_file_name(gunzipped_file_path)
 
-        summary_path_output = extract_summary_file_name(gunzipped_file_path)
+        summary_path_output = add_summary_extension(gunzipped_file_path)
 
         total_lines = count_total_lines(gunzipped_file_path)
 
