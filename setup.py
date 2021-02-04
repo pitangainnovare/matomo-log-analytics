@@ -24,6 +24,5 @@ setup(
     initialize_database=proc.initialize_database:main
     update_available_logs=proc.update_available_logs:main
     load_logs=proc.load_logs:main
-    extract_pretables=proc.extract_pretables:main
     """
 )
