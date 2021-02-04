@@ -86,7 +86,7 @@ def get_dates_able_to_extract(database_uri, collection, number_of_days):
     except NoResultFound:
         logging.info('There are no dates to be extracted')
 
-    return dates
+    return sorted(dates, reverse=True)
 
 
 def get_log_file_by_status(database_uri, collection, status):
