@@ -23,7 +23,7 @@ def create_tables(database_uri):
 
 
 def get_db_session(database_uri):
-    engine = create_engine(database_uri, encoding='utf8', convert_unicode=True)
+    engine = create_engine(database_uri)
 
     Base.metadata.bind = engine
     db_session = sessionmaker(bind=engine)
