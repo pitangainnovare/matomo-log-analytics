@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey, BIGINT
+from sqlalchemy import Column, Date, DateTime, ForeignKey, BIGINT, UniqueConstraint
 from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -47,9 +47,10 @@ class LogFileSummary(Base):
 
 class DateStatus(Base):
     __tablename__ = 'control_date_status'
+    __table_args__ = (UniqueConstraint('collection', 'date', name='uni_collection_date'), )
 
     id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True)
 
-    date = Column(Date(), nullable=False, unique=True, index=True)
+    date = Column(Date, nullable=False, index=True)
     status = Column(INTEGER, default=0)
     collection = Column(VARCHAR(3), nullable=False)

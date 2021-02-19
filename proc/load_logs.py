@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import magic
 import os
 import subprocess
 import time
@@ -14,7 +15,7 @@ from libs.lib_database import (
 from libs.lib_file_name import (
     add_summary_extension,
     FILE_GUNZIPPED_LOG_EXTENSION,
-    add_gunzip_extension
+    add_gunzip_extension, FILE_LOG_EXTENSION
 )
 from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
 
@@ -104,11 +105,19 @@ def main():
         time_start = time.time()
 
         logging.info('Uncompressing %s' % file_path)
-        if not file_path.endswith(FILE_GUNZIPPED_LOG_EXTENSION):
-            logging.error('File %s does not have a valid extension (e.g. ".gz")' % file_path)
+        if not file_path.endswith(FILE_GUNZIPPED_LOG_EXTENSION) and not file_path.endswith(FILE_LOG_EXTENSION):
+            logging.error('File %s does not have a valid extension (e.g. ".gz", ".log")' % file_path)
             exit(1)
-        subprocess.call('gunzip %s' % file_path, shell=True)
+
         gunzipped_file_path = file_path.replace(FILE_GUNZIPPED_LOG_EXTENSION, '')
+
+        file_type = magic.from_buffer(open(file_path, 'rb').read(2048), mime=True)
+        if 'application/gzip' in file_type or 'application/octet-stream' in file_type:
+            subprocess.call('gunzip %s' % file_path, shell=True)
+        else:
+            if file_path.endswith(FILE_GUNZIPPED_LOG_EXTENSION):
+                logging.warning('File %s is not compressed. Removing extension ".gz"' % file_path)
+                os.rename(file_path, gunzipped_file_path)
 
         summary_path_output = add_summary_extension(gunzipped_file_path)
 

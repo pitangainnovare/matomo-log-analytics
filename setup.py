@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 install_requires = [
     'sqlalchemy==1.3.22',
     'mysqlclient==1.4.6',
+    'python-magic==0.4.22',
 ]
 
 
