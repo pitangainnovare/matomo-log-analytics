@@ -8,6 +8,7 @@ FILE_NODE03_NAME = 'node03'
 FILE_HIPERION_NAME = 'hiperion'
 FILE_HIPERION_APACHE_NAME = 'hiperion-apache'
 FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
+FILE_PREPRINT_NAME = 'preprint'
 FILE_VARNISH_NAME = 'varnish'
 FILE_INFO_UNDEFINED = ''
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
@@ -24,6 +25,8 @@ def extract_log_server_name(full_path):
             return FILE_HIPERION_APACHE_NAME
         if FILE_VARNISH_NAME in full_path:
             return FILE_HIPERION_VARNISH_NAME
+    elif FILE_PREPRINT_NAME in full_path:
+        return FILE_PREPRINT_NAME
     return FILE_INFO_UNDEFINED
 
 
