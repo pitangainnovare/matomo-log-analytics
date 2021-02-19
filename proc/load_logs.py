@@ -112,7 +112,7 @@ def main():
         gunzipped_file_path = file_path.replace(FILE_GUNZIPPED_LOG_EXTENSION, '')
 
         file_type = magic.from_buffer(open(file_path, 'rb').read(2048), mime=True)
-        if 'application/gzip' in file_type:
+        if 'application/gzip' in file_type or 'application/octet-stream' in file_type:
             subprocess.call('gunzip %s' % file_path, shell=True)
         else:
             if file_path.endswith(FILE_GUNZIPPED_LOG_EXTENSION):
