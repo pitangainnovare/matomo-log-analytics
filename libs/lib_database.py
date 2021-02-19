@@ -12,7 +12,7 @@ from libs.lib_status import (
 )
 from libs.lib_summary import parse_summary
 from models.declarative import Base, DateStatus, LogFile, LogFileSummary
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
@@ -63,7 +63,8 @@ def update_available_log_files(database_uri, dir_usage_logs, collection):
 
             if server and date:
                 try:
-                    existing_log_file = db_session.query(LogFile).filter(LogFile.full_path == file).one()
+                    existing_log_file = db_session.query(LogFile).filter(and_(LogFile.full_path == file,
+                                                                              LogFile.collection == collection)).one()
                 except NoResultFound:
                     lf = LogFile()
                     lf.full_path = file
@@ -91,7 +92,8 @@ def update_log_file_status(database_uri, collection, file_id, status):
     db_session = get_db_session(database_uri)
 
     try:
-        log_file_row = db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.id == file_id).one()
+        log_file_row = db_session.query(LogFile).filter(and_(LogFile.collection == collection,
+                                                             LogFile.id == file_id)).one()
         if log_file_row.status != status:
             if log_file_row.status != LOG_FILE_STATUS_LOADED:
                 logging.info('Changing status of control_log_file.id=%s from %s to %s' % (file_id, log_file_row.status, status))
@@ -118,7 +120,8 @@ def update_date_status(database_uri, collection):
             new_status = compute_date_status(lfdate_to_status_files[key])
 
             try:
-                existing_date_status = db_session.query(DateStatus).filter(DateStatus.date == key).one()
+                existing_date_status = db_session.query(DateStatus).filter(and_(DateStatus.collection == collection,
+                                                                                DateStatus.date == key)).one()
                 if new_status != existing_date_status.status:
                     if existing_date_status.status in [DATE_STATUS_QUEUE, DATE_STATUS_PARTIAL]:
                         existing_date_status.status = new_status
