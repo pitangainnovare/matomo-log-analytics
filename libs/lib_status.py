@@ -45,4 +45,9 @@ def is_valid_log(log_file_full_path, log_file_server, log_file_date):
         if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
             return False
 
+    # Situação em que arquivo de servidor preprints contém apenas erros de acesso
+    if log_file_server == 'preprints':
+        if 'error' in log_file_full_path:
+            return False
+
     return True
