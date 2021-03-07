@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Date, DateTime, ForeignKey, BIGINT, UniqueConstraint
-from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
+from sqlalchemy.dialects.mysql import BOOLEAN, INTEGER, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -53,4 +53,11 @@ class DateStatus(Base):
 
     date = Column(Date, nullable=False, index=True)
     status = Column(INTEGER, default=0)
+
+    status_counter_article_metric = Column(BOOLEAN, default=False)
+    status_counter_journal_metric = Column(BOOLEAN, default=False)
+    status_sushi_article_metric = Column(BOOLEAN, default=False)
+    status_sushi_journal_metric = Column(BOOLEAN, default=False)
+    status_sushi_journal_yop_metric = Column(BOOLEAN, default=False)
+
     collection = Column(VARCHAR(3), nullable=False)
