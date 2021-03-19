@@ -10,6 +10,10 @@ FILE_HIPERION_APACHE_NAME = 'hiperion-apache'
 FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
 FILE_PREPRINTS_NAME = 'preprints'
 FILE_DATAVERSE_NAME = 'dataverse'
+FILE_DATAVERSE_HIFEN_NAME = 'data-scielo'
+FILE_DATAVERSE_DOT_NAME = 'data.scielo'
+FILE_DATAVERSE_NAME_1 = 'data1'
+FILE_DATAVERSE_NAME_2 = 'data2'
 FILE_VARNISH_NAME = 'varnish'
 FILE_INFO_UNDEFINED = ''
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
@@ -35,7 +39,10 @@ def extract_log_server_name(full_path):
             return FILE_PREPRINTS_NAME
 
     elif FILE_DATAVERSE_NAME in full_path:
-        return FILE_DATAVERSE_NAME
+        file_name = extract_file_name(full_path)
+        if FILE_DATAVERSE_DOT_NAME in file_name:
+            return FILE_DATAVERSE_NAME_2
+        return FILE_DATAVERSE_NAME_1
 
     return FILE_INFO_UNDEFINED
 
