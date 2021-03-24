@@ -8,6 +8,9 @@ FILE_NODE03_NAME = 'node03'
 FILE_HIPERION_NAME = 'hiperion'
 FILE_HIPERION_APACHE_NAME = 'hiperion-apache'
 FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
+FILE_NEW_BR_NAME = 'opac'
+FILE_NEW_BR_NAME_1 = 'new-br1'
+FILE_NEW_BR_NAME_2 = 'new-br2'
 FILE_PREPRINTS_NAME = 'preprints'
 FILE_DATAVERSE_NAME = 'dataverse'
 FILE_DATAVERSE_HIFEN_NAME = 'data-scielo'
@@ -24,6 +27,8 @@ REGEX_DATE_NO_HYPHEN = r'[1-2]{1}\d{3}[0-1]{1}\d{1}\d{2}'
 
 
 def extract_log_server_name(full_path):
+    file_name = extract_file_name(full_path)
+
     if FILE_NODE03_NAME in full_path:
         return FILE_NODE03_NAME
 
@@ -34,15 +39,18 @@ def extract_log_server_name(full_path):
             return FILE_HIPERION_VARNISH_NAME
 
     elif FILE_PREPRINTS_NAME in full_path:
-        file_name = extract_file_name(full_path)
         if FILE_PREPRINTS_NAME in file_name:
             return FILE_PREPRINTS_NAME
 
     elif FILE_DATAVERSE_NAME in full_path:
-        file_name = extract_file_name(full_path)
         if FILE_DATAVERSE_DOT_NAME in file_name:
             return FILE_DATAVERSE_NAME_2
         return FILE_DATAVERSE_NAME_1
+
+    elif FILE_NEW_BR_NAME in full_path:
+        if file_name.startswith(FILE_NEW_BR_NAME):
+            return FILE_NEW_BR_NAME_2
+        return FILE_NEW_BR_NAME_1
 
     return FILE_INFO_UNDEFINED
 
