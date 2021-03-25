@@ -82,11 +82,15 @@ def generate_import_logs_params(in_file_path, out_file_path, start_line):
 
 
 def count_total_lines(log_file):
-    output_line = subprocess.check_output(['wc', '-l', log_file])
+    try:
+        output_line = subprocess.check_output(['wc', '-l', log_file])
 
-    total_lines = output_line.split(' ')
-    if total_lines and total_lines[0].isdigit():
-        return int(total_lines[0])
+        total_lines = output_line.split(' ')
+        if total_lines and total_lines[0].isdigit():
+            return int(total_lines[0])
+    except subprocess.CalledProcessError:
+        logging.error('Something is wrong with file %s' % log_file)
+
     return -1
 
 
@@ -123,23 +127,24 @@ def main():
 
         total_lines = count_total_lines(gunzipped_file_path)
 
-        logging.info('Loading %s' % gunzipped_file_path)
-        update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
-        import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
-        subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
+        if total_lines > 0:
+            logging.info('Loading %s' % gunzipped_file_path)
+            update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
+            import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
+            subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
 
-        logging.info('Updating log_file_summary with %s' % summary_path_output)
-        full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
-        status = update_log_file_summary(LOG_FILE_DATABASE_STRING, full_path_summary_output, total_lines, file_id)
+            logging.info('Updating log_file_summary with %s' % summary_path_output)
+            full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
+            status = update_log_file_summary(LOG_FILE_DATABASE_STRING, full_path_summary_output, total_lines, file_id)
 
-        logging.info('Removing file %s' % gunzipped_file_path)
-        os.remove(gunzipped_file_path)
+            logging.info('Removing file %s' % gunzipped_file_path)
+            os.remove(gunzipped_file_path)
 
-        logging.info('Updating log_file for row %s' % file_id)
-        update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, status)
+            logging.info('Updating log_file for row %s' % file_id)
+            update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, status)
 
-        logging.info('Updating date_status')
-        update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)
+            logging.info('Updating date_status')
+            update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)
 
         time_end = time.time()
         logging.info('Time spent: (%.2f) seconds' % (time_end - time_start))
