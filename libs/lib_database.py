@@ -117,7 +117,7 @@ def update_date_status(database_uri, collection):
             lfdate_to_status_files[lf.date].append(lf.status)
 
         for key in lfdate_to_status_files:
-            new_status = compute_date_status(lfdate_to_status_files[key])
+            new_status = compute_date_status(lfdate_to_status_files[key], collection)
 
             try:
                 existing_date_status = db_session.query(DateStatus).filter(and_(DateStatus.collection == collection,

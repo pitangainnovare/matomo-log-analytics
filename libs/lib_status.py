@@ -17,18 +17,43 @@ LOG_FILE_STATUS_LOADING = 9
 LOG_FILE_STATUS_FAILED = -1
 LOG_FILE_STATUS_INVALID = -9
 
-DATE_STATUS_SUM_FOR_LOADED = 2
+COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
+    'arg': 1,
+    'chl': 1,
+    'col': 1,
+    'cri': 1,
+    'dat': 1,
+    'ecu': 1,
+    'esp': 1,
+    'mex': 1,
+    'nbr': 2,
+    'pre': 1,
+    'prt': 1,
+    'pry': 1,
+    'psi': 1,
+    'rve': 1,
+    'scl': 2,
+    'ssp': 2,
+    'sss': 1,
+    'sza': 1,
+    'ury': 1,
+    'wid': 2,
+}
+
+DEFAULT_STATUS_SUM = 2
 
 
-def compute_date_status(logfile_status_list):
+def compute_date_status(logfile_status_list, collection):
     status_sum = 0
     for s in logfile_status_list:
         if s == LOG_FILE_STATUS_LOADED:
             status_sum += 1
 
-    if status_sum == DATE_STATUS_SUM_FOR_LOADED:
+    expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection, DEFAULT_STATUS_SUM)
+
+    if status_sum == expected_status_sum:
         return DATE_STATUS_LOADED
-    elif 0 < status_sum < DATE_STATUS_SUM_FOR_LOADED:
+    elif 0 < status_sum < expected_status_sum:
         return DATE_STATUS_PARTIAL
 
     return DATE_STATUS_QUEUE
