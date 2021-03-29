@@ -117,7 +117,7 @@ def main():
 
         file_type = magic.from_buffer(open(file_path, 'rb').read(2048), mime=True)
         if 'application/gzip' in file_type or 'application/octet-stream' in file_type:
-            subprocess.call('gunzip %s' % file_path, shell=True)
+            subprocess.call('gunzip -c %s > %s' % (file_path, gunzipped_file_path), shell=True)
         else:
             if file_path.endswith(FILE_GUNZIPPED_LOG_EXTENSION):
                 logging.warning('File %s is not compressed. Removing extension ".gz"' % file_path)
