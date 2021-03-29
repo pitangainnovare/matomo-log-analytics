@@ -107,7 +107,7 @@ def _extract_main_values(data, extracted_data):
 
 def parse_summary(path_summary, expected_total_lines):
     with open(path_summary) as f:
-        f_raw = [line.strip().lower() for line in f.readlines()]
+        f_raw = [cline for cline in [line.strip().lower() for line in f.readlines()] if cline]
         f_summary = _extract_summary_data(f_raw, expected_total_lines)
 
     return f_summary
