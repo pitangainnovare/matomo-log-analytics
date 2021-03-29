@@ -60,7 +60,7 @@ def _extract_status_and_lines_parsed(data, extracted_data, expected_lines):
     sum_imported_ignored_lines = imported_lines + lines_ignored
     extracted_data['sum_imported_ignored_lines'] = sum_imported_ignored_lines
 
-    if sum_imported_ignored_lines == expected_lines:
+    if sum_imported_ignored_lines in range(expected_lines - 1, expected_lines + 2):
         extracted_data['status'] = LOG_FILE_STATUS_LOADED
         extracted_data['lines_parsed'] = sum_imported_ignored_lines
     else:
@@ -76,7 +76,7 @@ def _extract_values_failure_summary(data, extracted_data, expected_lines):
                 if m:
                     lines_parsed = int(m.group())
 
-                    if lines_parsed == expected_lines:
+                    if lines_parsed in range(expected_lines - 1, expected_lines + 2):
                         extracted_data['lines_parsed'] = lines_parsed
                         extracted_data['status'] = LOG_FILE_STATUS_LOADED
                     elif lines_parsed - RETRY_DIFF_LINES > 0:
