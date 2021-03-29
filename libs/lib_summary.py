@@ -92,8 +92,10 @@ def _extract_values_failure_summary(data, extracted_data, expected_lines):
 
 
 def _extract_main_values(data, extracted_data):
+    filled = set()
+
     for d in data:
-        for d_attr in [a for a in SUMMARY_ATTRIBUTES if a not in {'lines_parsed', 'total_time'}]:
+        for d_attr in [a for a in SUMMARY_ATTRIBUTES if a not in {'lines_parsed', 'total_time', 'status'}]:
 
             ki_vi_line = re.search(PATTERN_ATTR[d_attr], d)
 
@@ -102,7 +104,11 @@ def _extract_main_values(data, extracted_data):
                 if m:
                     vi = int(m.group())
                     extracted_data[d_attr] = vi
+                    filled.add(d_attr)
                 break
+
+        if len(filled) == len(SUMMARY_ATTRIBUTES) - 3:
+            break
 
 
 def parse_summary(path_summary, expected_total_lines):
