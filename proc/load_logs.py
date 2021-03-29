@@ -137,14 +137,15 @@ def main():
             full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
             status = update_log_file_summary(LOG_FILE_DATABASE_STRING, full_path_summary_output, total_lines, file_id)
 
-            logging.info('Removing file %s' % gunzipped_file_path)
-            os.remove(gunzipped_file_path)
-
             logging.info('Updating log_file for row %s' % file_id)
             update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, status)
 
             logging.info('Updating date_status')
             update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)
+
+        logging.info('Removing files %s and %s' % (file_path, gunzipped_file_path))
+        os.remove(file_path)
+        os.remove(gunzipped_file_path)
 
         time_end = time.time()
         logging.info('Time spent: (%.2f) seconds' % (time_end - time_start))
