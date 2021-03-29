@@ -60,7 +60,7 @@ def _extract_status_and_lines_parsed(data, extracted_data, expected_lines):
     sum_imported_ignored_lines = imported_lines + lines_ignored
     extracted_data['sum_imported_ignored_lines'] = sum_imported_ignored_lines
 
-    if sum_imported_ignored_lines == expected_lines:
+    if sum_imported_ignored_lines in range(expected_lines - 1, expected_lines + 2):
         extracted_data['status'] = LOG_FILE_STATUS_LOADED
         extracted_data['lines_parsed'] = sum_imported_ignored_lines
     else:
@@ -76,7 +76,7 @@ def _extract_values_failure_summary(data, extracted_data, expected_lines):
                 if m:
                     lines_parsed = int(m.group())
 
-                    if lines_parsed == expected_lines:
+                    if lines_parsed in range(expected_lines - 1, expected_lines + 2):
                         extracted_data['lines_parsed'] = lines_parsed
                         extracted_data['status'] = LOG_FILE_STATUS_LOADED
                     elif lines_parsed - RETRY_DIFF_LINES > 0:
@@ -92,8 +92,10 @@ def _extract_values_failure_summary(data, extracted_data, expected_lines):
 
 
 def _extract_main_values(data, extracted_data):
+    filled = set()
+
     for d in data:
-        for d_attr in [a for a in SUMMARY_ATTRIBUTES if a not in {'lines_parsed', 'total_time'}]:
+        for d_attr in [a for a in SUMMARY_ATTRIBUTES if a not in {'lines_parsed', 'total_time', 'status'}]:
 
             ki_vi_line = re.search(PATTERN_ATTR[d_attr], d)
 
@@ -102,12 +104,16 @@ def _extract_main_values(data, extracted_data):
                 if m:
                     vi = int(m.group())
                     extracted_data[d_attr] = vi
+                    filled.add(d_attr)
                 break
+
+        if len(filled) == len(SUMMARY_ATTRIBUTES) - 3:
+            break
 
 
 def parse_summary(path_summary, expected_total_lines):
     with open(path_summary) as f:
-        f_raw = [line.strip().lower() for line in f.readlines()]
+        f_raw = [cline for cline in [line.strip().lower() for line in f.readlines()] if cline]
         f_summary = _extract_summary_data(f_raw, expected_total_lines)
 
     return f_summary
