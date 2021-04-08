@@ -59,12 +59,53 @@ def copy_available_log_files(db_session, collection, dir_working_logs, copy_file
         logging.error('Can\'t copy available log files. MySQL Server is unavailable.')
 
 
+def check_and_fix_recovery_data():
+    for rf in os.listdir(DIR_RECOVERY):
+        full_rf_path = os.path.join(DIR_RECOVERY, rf)
 
-            if os.path.exists(target):
-                logging.warning('Log file %s exists' % target)
+        with open(full_rf_path) as f:
+            lines = f.readlines()
+
+            for row in reversed(lines):
+                if row:
+                    els = row.strip().split('\t')
+
+                    idlogfile = int(els[0])
+                    total_lines = int(els[1])
+                    lines_parsed = int(els[2])
+                    status = int(els[3])
+
+                    break
+
+            if status == 0 and lines_parsed == 0:
+                logging.info('Removing file %s...' % full_rf_path)
+                os.remove(full_rf_path)
+
             else:
-                logging.info('Copying file "%s" to "%s"' % (source, target))
-                shutil.copy(source, target)
+                adjusted_lines_parsed = lines_parsed - RETRY_DIFF_LINES
+
+                if adjusted_lines_parsed > 0:
+                    rf_data = {'status': status,
+                               'lines_parsed': adjusted_lines_parsed,
+                               'total_lines': total_lines,
+                               'idlogfile': idlogfile}
+
+                    logging.info('Updating table control_log_file_summary...')
+                    success = update_log_file_summary_with_recovery_data(SESSION_FACTORY(), rf_data)
+
+                    if success:
+                        logging.info('Recovered from critical error. File %s was added to log_file_summary' % full_rf_path)
+                        logging.info('Updating table control_log_file')
+                        update_log_file_status(SESSION_FACTORY(),
+                                               COLLECTION,
+                                               rf_data.get('idlogfile'),
+                                               rf_data.get('status'))
+
+                        logging.info('Updating table control_date_status...')
+                        update_date_status(SESSION_FACTORY(), COLLECTION)
+
+                        logging.info('Removing file %s...' % full_rf_path)
+                        os.remove(full_rf_path)
 
 
 def main():
