@@ -5,12 +5,16 @@ import os
 import subprocess
 import time
 
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import sessionmaker
 from libs.lib_database import (
     update_log_file_summary,
     update_log_file_status,
     update_date_status,
     get_lines_parsed,
-    get_recent_log_files
+    get_recent_log_files,
+    CRITICAL_ERROR
 )
 from libs.lib_file_name import (
     add_summary_extension,
@@ -21,6 +25,7 @@ from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LO
 
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
 DIR_SUMMARY = os.environ.get('DIR_SUMMARY', '/app/data/summary')
+DIR_RECOVERY = os.path.join(DIR_SUMMARY, 'recovery')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
 LOAD_FILES_LIMIT = int(os.environ.get('LOAD_FILES_LIMIT', 10))
@@ -29,12 +34,17 @@ MATOMO_ID_SITE = os.environ.get('MATOMO_ID_SITE', '1')
 MATOMO_API_TOKEN = os.environ.get('MATOMO_API_TOKEN', 'e536004d5816c66e10e23a80fbd57911')
 MATOMO_URL = os.environ.get('MATOMO_URL', 'http://localhost')
 MATOMO_RECORDERS = os.environ.get('MATOMO_RECORDERS', '12')
-RETRY_DIFF_LINES = os.environ.get('RETRY_DIFF_LINES', '110000')
+RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '110000'))
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
+MATOMO_STATUS_SUCCESS = 0
+MATOMO_STATUS_ERROR = 1
 
-def get_available_log_files(database_uri, collection, dir_working_logs, load_files_limit):
+ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
+SESSION_FACTORY = sessionmaker(bind=ENGINE)
+
+
     files_names = set([f for f in os.listdir(dir_working_logs) if os.path.isfile(os.path.join(dir_working_logs, f))])
 
     db_files = get_recent_log_files(database_uri,
