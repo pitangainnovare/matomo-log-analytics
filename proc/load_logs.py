@@ -39,7 +39,8 @@ RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '110000'))
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
 MATOMO_STATUS_SUCCESS = 0
-MATOMO_STATUS_ERROR = 1
+MATOMO_STATUS_ERROR_CALLED_PROCESSOR = 1
+MATOMO_STATUS_ERROR_OPERATIONAL = 2
 
 ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
 SESSION_FACTORY = sessionmaker(bind=ENGINE)
@@ -150,10 +151,13 @@ def main():
             import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
 
             try:
-                subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
+                subprocess.check_call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
                 matomo_status = MATOMO_STATUS_SUCCESS
             except subprocess.CalledProcessError:
-                matomo_status = MATOMO_STATUS_ERROR
+                matomo_status = MATOMO_STATUS_ERROR_CALLED_PROCESSOR
+            except OperationalError:
+                matomo_status = MATOMO_STATUS_ERROR_OPERATIONAL
+            logging.info('Logging variable matomo_status: %s' % matomo_status)
 
             logging.info('Updating log_file_summary with %s' % summary_path_output)
             full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
@@ -170,7 +174,6 @@ def main():
 
                 logging.info('Updating date_status')
                 update_date_status(SESSION_FACTORY(), COLLECTION)
-
 
         logging.info('Removing files %s and %s' % (file_path, gunzipped_file_path))
         os.remove(file_path)
