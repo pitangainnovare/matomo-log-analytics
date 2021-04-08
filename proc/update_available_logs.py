@@ -34,18 +34,31 @@ LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
 SESSION_FACTORY = sessionmaker(bind=ENGINE)
 
-def copy_available_log_files(database_uri, collection, dir_working_logs, copy_files_limit):
+
+def copy_available_log_files(db_session, collection, dir_working_logs, copy_files_limit):
     current_files = os.listdir(dir_working_logs)
 
-    recent_files = get_recent_log_files(database_uri,
+    recent_files = get_recent_log_files(db_session,
                                         collection,
-                                        ignore_status_list=[LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
+                                        ignore_status_list=[LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID],
+                                        limit=copy_files_limit)
 
-    for rf in recent_files.limit(copy_files_limit):
-        rf_name_gz = add_gunzip_extension(rf.name)
-        if rf_name_gz not in current_files:
-            source = rf.full_path
-            target = os.path.join(dir_working_logs, rf_name_gz)
+    try:
+        for rf in recent_files:
+            rf_name_gz = add_gunzip_extension(rf.name)
+            if rf_name_gz not in current_files:
+                source = rf.full_path
+                target = os.path.join(dir_working_logs, rf_name_gz)
+
+                if os.path.exists(target):
+                    logging.warning('Log file %s exists' % target)
+                else:
+                    logging.info('Copying file "%s" to "%s"' % (source, target))
+                    shutil.copy(source, target)
+    except OperationalError or TypeError:
+        logging.error('Can\'t copy available log files. MySQL Server is unavailable.')
+
+
 
             if os.path.exists(target):
                 logging.warning('Log file %s exists' % target)
