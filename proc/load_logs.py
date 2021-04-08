@@ -45,31 +45,37 @@ ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
 SESSION_FACTORY = sessionmaker(bind=ENGINE)
 
 
+def get_available_log_files(db_session, collection, dir_working_logs, load_files_limit):
     files_names = set([f for f in os.listdir(dir_working_logs) if os.path.isfile(os.path.join(dir_working_logs, f))])
 
-    db_files = get_recent_log_files(database_uri,
+    db_files = get_recent_log_files(db_session,
                                     collection,
                                     ignore_status_list=[LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
 
-    db_files_with_start_lines = [(db_f.id, db_f.name, get_lines_parsed(database_uri, db_f.id)) for db_f in db_files]
-
     available_lf = set()
 
-    file_counter = 0
-    for i in db_files_with_start_lines:
-        id, name, start_line = i
+    if db_files:
+        try:
+            db_files_with_start_lines = [(db_f.id, db_f.name, get_lines_parsed(db_session, db_f.id)) for db_f in db_files]
+        except OperationalError:
+            logging.error('Can\'t get available log files. MySQL Server is unavailable.')
+            db_files_with_start_lines = []
 
-        gz_name = add_gunzip_extension(name)
-        full_path_gz_name = os.path.join(dir_working_logs, gz_name)
+        file_counter = 0
+        for i in db_files_with_start_lines:
+            id, name, start_line = i
 
-        alf = (id, full_path_gz_name, start_line)
+            gz_name = add_gunzip_extension(name)
+            full_path_gz_name = os.path.join(dir_working_logs, gz_name)
 
-        if gz_name in files_names:
-            available_lf.add(alf)
+            alf = (id, full_path_gz_name, start_line)
 
-            file_counter += 1
-            if file_counter >= load_files_limit:
-                break
+            if gz_name in files_names:
+                available_lf.add(alf)
+
+                file_counter += 1
+                if file_counter >= load_files_limit:
+                    break
 
     return available_lf
 
