@@ -118,7 +118,7 @@ def main():
     if not os.path.exists(DIR_SUMMARY):
         os.makedirs(DIR_SUMMARY)
 
-    files = get_available_log_files(LOG_FILE_DATABASE_STRING, COLLECTION, DIR_WORKING_LOGS, LOAD_FILES_LIMIT)
+    files = get_available_log_files(SESSION_FACTORY(), COLLECTION, DIR_WORKING_LOGS, LOAD_FILES_LIMIT)
 
     for file_attrs in files:
         file_id, file_path, start_line = file_attrs
@@ -145,7 +145,8 @@ def main():
 
         if total_lines > 0:
             logging.info('Loading %s' % gunzipped_file_path)
-            update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
+            update_log_file_status(SESSION_FACTORY(), COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
+
             import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
             subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
 
