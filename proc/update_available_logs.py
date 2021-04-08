@@ -21,10 +21,13 @@ from libs.lib_database import (
 DIR_USAGE_LOGS_1 = os.environ.get('DIR_USAGE_LOGS_1', '/app/usage-logs-1')
 DIR_USAGE_LOGS_2 = os.environ.get('DIR_USAGE_LOGS_2', '/app/usage-logs-2')
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
+DIR_SUMMARY = os.environ.get('DIR_SUMMARY', '/app/data/summary')
+DIR_RECOVERY = os.path.join(DIR_SUMMARY, 'recovery')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
 COPY_FILES_LIMIT = int(os.environ.get('COPY_FILES_LIMIT', 10))
 COLLECTION = os.environ.get('COLLECTION', 'scl')
+RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '110000'))
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
