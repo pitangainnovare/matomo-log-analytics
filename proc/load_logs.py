@@ -157,13 +157,20 @@ def main():
 
             logging.info('Updating log_file_summary with %s' % summary_path_output)
             full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
-            status = update_log_file_summary(LOG_FILE_DATABASE_STRING, full_path_summary_output, total_lines, file_id)
+            status = update_log_file_summary(SESSION_FACTORY(),
+                                             full_path_summary_output,
+                                             total_lines,
+                                             file_id,
+                                             DIR_RECOVERY,
+                                             matomo_status)
 
-            logging.info('Updating log_file for row %s' % file_id)
-            update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, status)
+            if status != CRITICAL_ERROR:
+                logging.info('Updating log_file for row %s' % file_id)
+                update_log_file_status(SESSION_FACTORY(), COLLECTION, file_id, status)
 
-            logging.info('Updating date_status')
-            update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)
+                logging.info('Updating date_status')
+                update_date_status(SESSION_FACTORY(), COLLECTION)
+
 
         logging.info('Removing files %s and %s' % (file_path, gunzipped_file_path))
         os.remove(file_path)
