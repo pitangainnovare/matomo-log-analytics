@@ -4,9 +4,18 @@ import logging
 import os
 import shutil
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from libs.lib_file_name import add_gunzip_extension
 from libs.lib_status import LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
-from libs.lib_database import update_available_log_files, update_date_status, get_recent_log_files
+from sqlalchemy.exc import OperationalError
+from libs.lib_database import (
+    update_available_log_files,
+    update_date_status,
+    get_recent_log_files,
+    update_log_file_status,
+    update_log_file_summary_with_recovery_data
+)
 
 
 DIR_USAGE_LOGS_1 = os.environ.get('DIR_USAGE_LOGS_1', '/app/usage-logs-1')
