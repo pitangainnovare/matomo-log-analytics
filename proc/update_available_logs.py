@@ -31,6 +31,8 @@ RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '110000'))
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
+ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
+SESSION_FACTORY = sessionmaker(bind=ENGINE)
 
 def copy_available_log_files(database_uri, collection, dir_working_logs, copy_files_limit):
     current_files = os.listdir(dir_working_logs)
