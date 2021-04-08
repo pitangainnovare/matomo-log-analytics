@@ -165,6 +165,32 @@ def update_log_file_summary(database_uri, summary_file, expected_lines, log_file
     lfs.status = summary_data.get('status')
 
     lfs.idlogfile = log_file_id
+def update_log_file_summary_with_recovery_data(db_session, recovery_data):
+    try:
+        lfs = LogFileSummary()
+        lfs.total_lines = recovery_data.get('total_lines')
+        lfs.lines_parsed = recovery_data.get('lines_parsed')
+        lfs.status = recovery_data.get('status')
+        lfs.total_time = 0
+        lfs.ignored_lines_bots = 0
+        lfs.ignored_lines_filtered = 0
+        lfs.ignored_lines_http_errors = 0
+        lfs.ignored_lines_http_redirects = 0
+        lfs.ignored_lines_invalid = 0
+        lfs.ignored_lines_static_resources = 0
+        lfs.sum_imported_ignored_lines = 0
+        lfs.total_ignored_lines = 0
+        lfs.total_imported_lines = 0
+
+        lfs.idlogfile = recovery_data.get('idlogfile')
+
+        db_session.add(lfs)
+        db_session.commit()
+
+        return SUCCESSFUL_RECOVERY
+
+    except OperationalError:
+        logging.error('Can\'t update log file summary with recovery data. MySQL Server is unavailable.')
 
     db_session.add(lfs)
     db_session.commit()
