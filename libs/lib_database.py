@@ -170,3 +170,12 @@ def update_log_file_summary(database_uri, summary_file, expected_lines, log_file
     db_session.commit()
 
     return lfs.status
+def _save_recovery_data(recover_directory, log_file_id, expected_lines, parsed_lines, status):
+    logging.error('Can\'t update table log_file_summary. MySQL Server is unavailable.')
+    logging.warning('Creating recovery data for log file id %s.' % log_file_id)
+
+    if not os.path.exists(recover_directory):
+        os.makedirs(recover_directory)
+
+    with open(os.path.join(recover_directory, str(log_file_id) + '.tsv'), 'a') as f:
+        f.write('\t'.join([str(i) for i in [log_file_id, expected_lines, parsed_lines, status]]) + '\n')
