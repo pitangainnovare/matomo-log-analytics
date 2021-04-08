@@ -128,14 +128,21 @@ def main():
         logging.info('Creating DIR_WORKING_LOGS=%s' % DIR_WORKING_LOGS)
         os.makedirs(DIR_WORKING_LOGS)
 
+    if not os.path.exists(DIR_RECOVERY):
+        logging.info('Creating DIR_RECOVERY=%s' % DIR_RECOVERY)
+        os.makedirs(DIR_RECOVERY)
+
+    logging.info('Checking for recovery data...')
+    check_and_fix_recovery_data()
+
     if 'update_log_file' in params.exec_mode:
         for dir_log in [DIR_USAGE_LOGS_1, DIR_USAGE_LOGS_2]:
             logging.info('Updating table log_file with possible new logs in %s' % dir_log)
-            update_available_log_files(LOG_FILE_DATABASE_STRING, dir_log, COLLECTION)
+            update_available_log_files(SESSION_FACTORY(), dir_log, COLLECTION)
 
     if 'copy_logs' in params.exec_mode:
-        copy_available_log_files(LOG_FILE_DATABASE_STRING, COLLECTION, DIR_WORKING_LOGS, COPY_FILES_LIMIT)
+        copy_available_log_files(SESSION_FACTORY(), COLLECTION, DIR_WORKING_LOGS, COPY_FILES_LIMIT)
 
     if 'date_status' in params.exec_mode:
         logging.info('Updating table date_status')
-        update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)
+        update_date_status(SESSION_FACTORY(), COLLECTION)
