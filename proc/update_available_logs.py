@@ -43,20 +43,21 @@ def copy_available_log_files(db_session, collection, dir_working_logs, copy_file
                                         ignore_status_list=[LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID],
                                         limit=copy_files_limit)
 
-    try:
-        for rf in recent_files:
-            rf_name_gz = add_gunzip_extension(rf.name)
-            if rf_name_gz not in current_files:
-                source = rf.full_path
-                target = os.path.join(dir_working_logs, rf_name_gz)
+    if recent_files:
+        try:
+            for rf in recent_files:
+                rf_name_gz = add_gunzip_extension(rf.name)
+                if rf_name_gz not in current_files:
+                    source = rf.full_path
+                    target = os.path.join(dir_working_logs, rf_name_gz)
 
-                if os.path.exists(target):
-                    logging.warning('Log file %s exists' % target)
-                else:
-                    logging.info('Copying file "%s" to "%s"' % (source, target))
-                    shutil.copy(source, target)
-    except OperationalError or TypeError:
-        logging.error('Can\'t copy available log files. MySQL Server is unavailable.')
+                    if os.path.exists(target):
+                        logging.warning('Log file %s exists' % target)
+                    else:
+                        logging.info('Copying file "%s" to "%s"' % (source, target))
+                        shutil.copy(source, target)
+        except OperationalError or TypeError:
+            logging.error('Can\'t copy available log files. MySQL Server is unavailable.')
 
 
 def check_and_fix_recovery_data():
