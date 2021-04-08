@@ -13,8 +13,12 @@ from libs.lib_status import (
 from libs.lib_summary import parse_summary
 from models.declarative import Base, DateStatus, LogFile, LogFileSummary
 from sqlalchemy import create_engine, and_
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
+
+CRITICAL_ERROR = -999
+SUCCESSFUL_RECOVERY = 999
 
 
 def create_tables(database_uri):
