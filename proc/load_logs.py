@@ -5,12 +5,16 @@ import os
 import subprocess
 import time
 
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import sessionmaker
 from libs.lib_database import (
     update_log_file_summary,
     update_log_file_status,
     update_date_status,
     get_lines_parsed,
-    get_recent_log_files
+    get_recent_log_files,
+    CRITICAL_ERROR
 )
 from libs.lib_file_name import (
     add_summary_extension,
@@ -21,6 +25,7 @@ from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LO
 
 DIR_WORKING_LOGS = os.environ.get('DIR_WORKING_LOGS', '/app/data/working')
 DIR_SUMMARY = os.environ.get('DIR_SUMMARY', '/app/data/summary')
+DIR_RECOVERY = os.path.join(DIR_SUMMARY, 'recovery')
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
 
 LOAD_FILES_LIMIT = int(os.environ.get('LOAD_FILES_LIMIT', 10))
@@ -29,37 +34,48 @@ MATOMO_ID_SITE = os.environ.get('MATOMO_ID_SITE', '1')
 MATOMO_API_TOKEN = os.environ.get('MATOMO_API_TOKEN', 'e536004d5816c66e10e23a80fbd57911')
 MATOMO_URL = os.environ.get('MATOMO_URL', 'http://localhost')
 MATOMO_RECORDERS = os.environ.get('MATOMO_RECORDERS', '12')
-RETRY_DIFF_LINES = os.environ.get('RETRY_DIFF_LINES', '110000')
+RETRY_DIFF_LINES = int(os.environ.get('RETRY_DIFF_LINES', '110000'))
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
+MATOMO_STATUS_SUCCESS = 0
+MATOMO_STATUS_ERROR = 1
 
-def get_available_log_files(database_uri, collection, dir_working_logs, load_files_limit):
+ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
+SESSION_FACTORY = sessionmaker(bind=ENGINE)
+
+
+def get_available_log_files(db_session, collection, dir_working_logs, load_files_limit):
     files_names = set([f for f in os.listdir(dir_working_logs) if os.path.isfile(os.path.join(dir_working_logs, f))])
 
-    db_files = get_recent_log_files(database_uri,
+    db_files = get_recent_log_files(db_session,
                                     collection,
                                     ignore_status_list=[LOG_FILE_STATUS_LOADED, LOG_FILE_STATUS_INVALID])
 
-    db_files_with_start_lines = [(db_f.id, db_f.name, get_lines_parsed(database_uri, db_f.id)) for db_f in db_files]
-
     available_lf = set()
 
-    file_counter = 0
-    for i in db_files_with_start_lines:
-        id, name, start_line = i
+    if db_files:
+        try:
+            db_files_with_start_lines = [(db_f.id, db_f.name, get_lines_parsed(db_session, db_f.id)) for db_f in db_files]
+        except OperationalError:
+            logging.error('Can\'t get available log files. MySQL Server is unavailable.')
+            db_files_with_start_lines = []
 
-        gz_name = add_gunzip_extension(name)
-        full_path_gz_name = os.path.join(dir_working_logs, gz_name)
+        file_counter = 0
+        for i in db_files_with_start_lines:
+            id, name, start_line = i
 
-        alf = (id, full_path_gz_name, start_line)
+            gz_name = add_gunzip_extension(name)
+            full_path_gz_name = os.path.join(dir_working_logs, gz_name)
 
-        if gz_name in files_names:
-            available_lf.add(alf)
+            alf = (id, full_path_gz_name, start_line)
 
-            file_counter += 1
-            if file_counter >= load_files_limit:
-                break
+            if gz_name in files_names:
+                available_lf.add(alf)
+
+                file_counter += 1
+                if file_counter >= load_files_limit:
+                    break
 
     return available_lf
 
@@ -102,7 +118,7 @@ def main():
     if not os.path.exists(DIR_SUMMARY):
         os.makedirs(DIR_SUMMARY)
 
-    files = get_available_log_files(LOG_FILE_DATABASE_STRING, COLLECTION, DIR_WORKING_LOGS, LOAD_FILES_LIMIT)
+    files = get_available_log_files(SESSION_FACTORY(), COLLECTION, DIR_WORKING_LOGS, LOAD_FILES_LIMIT)
 
     for file_attrs in files:
         file_id, file_path, start_line = file_attrs
@@ -129,19 +145,32 @@ def main():
 
         if total_lines > 0:
             logging.info('Loading %s' % gunzipped_file_path)
-            update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
+            update_log_file_status(SESSION_FACTORY(), COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
+
             import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
-            subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
+
+            try:
+                subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
+                matomo_status = MATOMO_STATUS_SUCCESS
+            except subprocess.CalledProcessError:
+                matomo_status = MATOMO_STATUS_ERROR
 
             logging.info('Updating log_file_summary with %s' % summary_path_output)
             full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
-            status = update_log_file_summary(LOG_FILE_DATABASE_STRING, full_path_summary_output, total_lines, file_id)
+            status = update_log_file_summary(SESSION_FACTORY(),
+                                             full_path_summary_output,
+                                             total_lines,
+                                             file_id,
+                                             DIR_RECOVERY,
+                                             matomo_status)
 
-            logging.info('Updating log_file for row %s' % file_id)
-            update_log_file_status(LOG_FILE_DATABASE_STRING, COLLECTION, file_id, status)
+            if status != CRITICAL_ERROR:
+                logging.info('Updating log_file for row %s' % file_id)
+                update_log_file_status(SESSION_FACTORY(), COLLECTION, file_id, status)
 
-            logging.info('Updating date_status')
-            update_date_status(LOG_FILE_DATABASE_STRING, COLLECTION)
+                logging.info('Updating date_status')
+                update_date_status(SESSION_FACTORY(), COLLECTION)
+
 
         logging.info('Removing files %s and %s' % (file_path, gunzipped_file_path))
         os.remove(file_path)
