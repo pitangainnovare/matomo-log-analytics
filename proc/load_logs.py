@@ -148,7 +148,12 @@ def main():
             update_log_file_status(SESSION_FACTORY(), COLLECTION, file_id, LOG_FILE_STATUS_LOADING)
 
             import_logs_params = generate_import_logs_params(gunzipped_file_path, summary_path_output, start_line)
-            subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
+
+            try:
+                subprocess.call('python2 import_logs.py' + ' ' + import_logs_params, shell=True)
+                matomo_status = MATOMO_STATUS_SUCCESS
+            except subprocess.CalledProcessError:
+                matomo_status = MATOMO_STATUS_ERROR
 
             logging.info('Updating log_file_summary with %s' % summary_path_output)
             full_path_summary_output = os.path.join(DIR_SUMMARY, summary_path_output)
