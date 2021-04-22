@@ -3,59 +3,12 @@ import datetime
 import logging
 import re
 import os
-import sys
+
+from libs.values import *
 
 
 COLLECTION = os.environ.get('COLLECTION', 'scl')
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
-
-
-# Logs SciELO Brasil
-FILE_APACHE_NAME = 'apache'
-FILE_NODE03_NAME = 'node03'
-FILE_HIPERION_NAME = 'hiperion'
-FILE_HIPERION_APACHE_NAME = 'hiperion-apache'
-FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
-FILE_VARNISH_NAME = 'varnish'
-
-# Logs SciELO Brasil (site novo)
-FILE_NEW_BR_NAME = 'opac'
-FILE_NEW_BR_NAME_1 = 'new-br1'
-FILE_NEW_BR_NAME_2 = 'new-br2'
-
-# Logs SciELO Preprints
-FILE_PREPRINTS_NAME = 'preprints'
-
-# Logs SciELO Dataverse
-FILE_DATAVERSE_NAME = 'dataverse'
-FILE_DATAVERSE_HIFEN_NAME = 'data-scielo'
-FILE_DATAVERSE_DOT_NAME = 'data.scielo'
-FILE_DATAVERSE_NAME_1 = 'data1'
-FILE_DATAVERSE_NAME_2 = 'data2'
-
-# Logs SciELO de outras coleções
-PARTIAL_FILE_NAME_TO_SERVER = {
-    'scielo.ar.': ('arg', ''),
-    'scielo.cl.': ('chl', ''),
-    'scielo.co.': ('col', ''),
-    'scielo.cr.': ('cri', ''),
-    'scielo.ec.': ('ecu', ''),
-    'scielo.es.': ('esp', ''),
-    'scielo.mx.': ('mex', ''),
-    'scielo.pt.': ('prt', ''),
-    'scielo.py.': ('pry', ''),
-    'scielo.za.': ('sza', ''),
-    'scielo.uy.': ('ury', ''),
-    'caribbean.scielo.org.1.': ('wid', '1'),
-    'caribbean.scielo.org.2.': ('wid', '2'),
-    'scielo.pepsic.': ('psi', ''),
-    'scielo.revenf.': ('rve', ''),
-    'scielo.sp.1.': ('ssp', '1'),
-    'scielo.sp.2.': ('ssp', '2'),
-    'scielo.ss.': ('sss', '')
-}
-
-FILE_INFO_UNDEFINED = ''
 
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
 FILE_GUNZIPPED_LOG_EXTENSION = '.gz'
@@ -68,46 +21,99 @@ logging.basicConfig(level=LOGGING_LEVEL,
                     datefmt='%d/%b/%Y %H:%M:%S')
 
 
-def extract_log_server_name(full_path):
-    file_name = extract_file_name(full_path)
-
+def _check_brasil(full_path, file_name):
     if FILE_NODE03_NAME in full_path:
         return FILE_NODE03_NAME
 
     elif FILE_HIPERION_NAME in full_path:
         if FILE_APACHE_NAME in full_path:
             return FILE_HIPERION_APACHE_NAME
+
         if FILE_VARNISH_NAME in full_path:
             return FILE_HIPERION_VARNISH_NAME
 
-    elif FILE_PREPRINTS_NAME in full_path:
+
+def _check_dataverse(full_path, file_name):
+    if FILE_DATAVERSE_NAME in full_path:
+        if FILE_DATAVERSE_DOT_NAME in file_name:
+            return FILE_DATAVERSE_NAME_2
+
+        return FILE_DATAVERSE_NAME_1
+
+
+def _check_preprints(full_path, file_name):
+    if FILE_PREPRINTS_NAME in full_path:
         if FILE_PREPRINTS_NAME in file_name:
             return FILE_PREPRINTS_NAME
 
-    elif FILE_DATAVERSE_NAME in full_path:
-        if FILE_DATAVERSE_DOT_NAME in file_name:
-            return FILE_DATAVERSE_NAME_2
-        return FILE_DATAVERSE_NAME_1
 
-    elif FILE_NEW_BR_NAME in full_path:
-        if file_name.startswith(FILE_NEW_BR_NAME):
-            return FILE_NEW_BR_NAME_2
-        return FILE_NEW_BR_NAME_1
-
+def _check_ratchet(full_path, file_name):
     results = []
+
     for k in PARTIAL_FILE_NAME_TO_SERVER:
         if k in file_name:
             server_prefix, server_number = PARTIAL_FILE_NAME_TO_SERVER[k]
+
             if COLLECTION in server_prefix:
                 results.append(''.join(PARTIAL_FILE_NAME_TO_SERVER[k]))
 
     if len(results) == 1:
         return results[0]
+
     elif len(results) > 1:
         logging.error('%s pertence a mais de uma coleção.' % full_path)
-        sys.exit(1)
+        return -1
 
-    return FILE_INFO_UNDEFINED
+
+def _check_new_brasil(full_path, file_name):
+    if FILE_NEW_BR_NAME in full_path:
+        if file_name.startswith(FILE_NEW_BR_NAME):
+            return FILE_NEW_BR_NAME_2
+
+        return FILE_NEW_BR_NAME_1
+
+
+def _check_venezuela(full_path, file_name):
+    if FILE_VENEZUELA_CENTOS01_NAME in full_path:
+        if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
+            return FILE_VENEZUELA_NAME_1
+
+        elif re.search(REGEX_VENEZUELA_ENDS_WITH_DATE, file_name):
+            return FILE_VENEZUELA_NAME_2
+
+        elif re.search(REGEX_VENEZUELA_ENDS_WITH_DATE_NO_HIPHEN, file_name):
+            return FILE_VENEZUELA_NAME_3
+
+    elif FILE_VENEZUELA_CENTOS02_NAME in full_path:
+        if FILE_VENEZUELA_CENTOS02_ORG_VE_NAME in full_path:
+            if re.search(REGEX_VENEZUELA_ENDS_WITH_DATE, file_name):
+                return FILE_VENEZUELA_NAME_4
+
+        elif FILE_VENEZUELA_CENTOS02_VARNISH_NAME in full_path:
+            return FILE_VENEZUELA_NAME_5
+
+    elif FILE_VENEZUELA_GENERIC_NAME in file_name:
+        if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
+            return FILE_VENEZUELA_NAME_1
+
+
+def extract_log_server_name(full_path):
+    collection_to_check_method = {
+        'nbr': _check_new_brasil,
+        'scl': _check_brasil,
+        'ven': _check_venezuela,
+        'dat': _check_dataverse,
+        'pre': _check_preprints
+    }
+
+    file_name = extract_file_name(full_path)
+    check_method = collection_to_check_method.get(COLLECTION, _check_ratchet)
+    check_result = check_method(full_path, file_name)
+
+    if check_result:
+        return check_result
+    else:
+        return FILE_INFO_UNDEFINED
 
 
 def _detect_date_full_path(regex, full_path):
