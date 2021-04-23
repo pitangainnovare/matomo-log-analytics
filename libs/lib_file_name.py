@@ -62,7 +62,6 @@ def _check_ratchet(full_path, file_name):
 
     elif len(results) > 1:
         logging.error('%s pertence a mais de uma coleção.' % full_path)
-        return -1
 
 
 def _check_new_brasil(full_path, file_name):
