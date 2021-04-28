@@ -1,7 +1,8 @@
 # coding=utf-8
 import datetime
 
-from libs.lib_file_name import extract_file_name
+from libs.lib_file_name import extract_file_name, INVALID_SERVERS
+
 
 DATE_STATUS_QUEUE = 0
 DATE_STATUS_PARTIAL = 1
@@ -59,18 +60,19 @@ def compute_date_status(logfile_status_list, collection):
     return DATE_STATUS_QUEUE
 
 
-def is_valid_log(log_file_full_path, log_file_server, log_file_date):
+def is_valid_log(collection, log_file_full_path, log_file_server, log_file_date):
     date = datetime.datetime.strptime(log_file_date, '%Y-%m-%d')
 
-    # Situação em que arquivo com prefixo varnishncsa contém IPs anônimos
-    if 'varnishncsa' in log_file_full_path:
-        if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
-            return False
+    if collection == 'scl':
+        # Situação em que arquivo com prefixo varnishncsa contém IPs anônimos
+        if 'varnishncsa' in log_file_full_path:
+            if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
+                return False
 
-    # Situação em que arquivo de servidor hiperion-apache contém IPs anônimos
-    if log_file_server == 'hiperion-apache':
-        if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
-            return False
+        # Situação em que arquivo de servidor hiperion-apache contém IPs anônimos
+        if log_file_server == 'hiperion-apache':
+            if date > datetime.datetime.strptime('2020-04-29', '%Y-%m-%d'):
+                return False
 
     if log_file_server == 'preprints':
         # Situação em que arquivo de servidor preprints contém apenas erros de acesso
@@ -85,5 +87,8 @@ def is_valid_log(log_file_full_path, log_file_server, log_file_date):
         # Situação em que não se trata de um arquivo com extensão .log.gz
         if not log_file_name.endswith('.log.gz'):
             return False
+
+    if collection == 'ven' and log_file_server in INVALID_SERVERS:
+        return False
 
     return True
