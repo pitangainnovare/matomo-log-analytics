@@ -3,3 +3,4 @@
 loaded
 Pipfile
 *.lock
+.venv
