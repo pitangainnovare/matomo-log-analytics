@@ -74,7 +74,7 @@ def update_available_log_files(db_session, dir_usage_logs, collection):
                     lf.status = LOG_FILE_STATUS_QUEUE
                     lf.collection = collection
 
-                    if not is_valid_log(lf.full_path, lf.server, lf.date):
+                    if not is_valid_log(lf.collection, lf.full_path, lf.server, lf.date):
                         lf.status = LOG_FILE_STATUS_INVALID
                         logging.warning('LogFile row created, but will not be loaded due to unmet requirements: %s' % file)
                     else:
