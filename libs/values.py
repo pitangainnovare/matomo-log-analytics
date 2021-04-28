@@ -1,3 +1,5 @@
+# coding=utf-8
+
 # Logs SciELO Brasil (site clássico)
 FILE_APACHE_NAME = 'apache'
 FILE_NODE03_NAME = 'node03'
@@ -21,19 +23,24 @@ FILE_DATAVERSE_NAME_1 = 'data1'
 FILE_DATAVERSE_NAME_2 = 'data2'
 
 # Logs SciELO Venezuela
+FILE_VENEZUELA_APACHE_NAME = 'apache'
+FILE_VENEZUELA_HA_NAME = 'logs-ha'
 FILE_VENEZUELA_CENTOS01_NAME = 'centos-2gb-nyc3-01'
 FILE_VENEZUELA_CENTOS02_NAME = 'centos-2gb-nyc3-02'
 FILE_VENEZUELA_CENTOS02_ORG_VE_NAME = 'scielo-org-ve'
 FILE_VENEZUELA_CENTOS02_VARNISH_NAME = 'varnish-aws'
-FILE_VENEZUELA_GENERIC_NAME = '+ve-scielo-org-access'
+FILE_VENEZUELA_GENERIC_NAME_1 = 've-scielo-org-access'
+FILE_VENEZUELA_GENERIC_NAME_2 = 've-scielo-org'
 REGEX_VENEZUELA_ENDS_WITH_DATE = r'scielo-org-ve.log-\d{4}-\d{2}-\d{2}\.gz'
 REGEX_VENEZUELA_ENDS_WITH_DATE_NO_HIPHEN = r'scielo-org-ve.log-\d{4}\d{2}\d{2}\.gz'
-REGEX_VENEZUELA_STARTS_WITH_DATE = r'\d{4}-\d{2}-\d{2}\+ve-scielo-org-access\.log\.gz'
+REGEX_VENEZUELA_STARTS_WITH_DATE = r'^\d{4}-\d{2}-\d{2}.*ve-scielo-org.*\.log\.gz'
 FILE_VENEZUELA_NAME_1 = 'ven1'
 FILE_VENEZUELA_NAME_2 = 'ven2'
 FILE_VENEZUELA_NAME_3 = 'ven3'
 FILE_VENEZUELA_NAME_4 = 'ven4'
 FILE_VENEZUELA_NAME_5 = 'ven5'
+FILE_VENEZUELA_NAME_6 = 'ven6'
+FILE_VENEZUELA_NAME_7 = 'ven7'
 
 # Logs SciELO de outras coleções
 PARTIAL_FILE_NAME_TO_SERVER = {
@@ -59,3 +66,13 @@ PARTIAL_FILE_NAME_TO_SERVER = {
 
 # Logs de coleção não detectada
 FILE_INFO_UNDEFINED = ''
+
+# Servidores invalidados
+INVALID_SERVERS = {
+    'ven1',
+    'ven2',
+    'ven3',
+    'ven4',
+    'ven5',
+    'ven6'
+}

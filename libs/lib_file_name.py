@@ -3,6 +3,7 @@ import datetime
 import logging
 import re
 import os
+import sys
 
 from libs.values import *
 
@@ -73,27 +74,35 @@ def _check_new_brasil(full_path, file_name):
 
 
 def _check_venezuela(full_path, file_name):
-    if FILE_VENEZUELA_CENTOS01_NAME in full_path:
-        if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
-            return FILE_VENEZUELA_NAME_1
+    if FILE_VENEZUELA_APACHE_NAME in full_path:
+        if FILE_VENEZUELA_CENTOS01_NAME in full_path:
+            if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
+                return FILE_VENEZUELA_NAME_1
 
-        elif re.search(REGEX_VENEZUELA_ENDS_WITH_DATE, file_name):
-            return FILE_VENEZUELA_NAME_2
+            elif re.search(REGEX_VENEZUELA_ENDS_WITH_DATE, file_name):
+                return FILE_VENEZUELA_NAME_3
 
-        elif re.search(REGEX_VENEZUELA_ENDS_WITH_DATE_NO_HIPHEN, file_name):
-            return FILE_VENEZUELA_NAME_3
-
-    elif FILE_VENEZUELA_CENTOS02_NAME in full_path:
-        if FILE_VENEZUELA_CENTOS02_ORG_VE_NAME in full_path:
-            if re.search(REGEX_VENEZUELA_ENDS_WITH_DATE, file_name):
+            elif re.search(REGEX_VENEZUELA_ENDS_WITH_DATE_NO_HIPHEN, file_name):
                 return FILE_VENEZUELA_NAME_4
 
-        elif FILE_VENEZUELA_CENTOS02_VARNISH_NAME in full_path:
-            return FILE_VENEZUELA_NAME_5
+        elif FILE_VENEZUELA_CENTOS02_NAME in full_path:
+            if FILE_VENEZUELA_CENTOS02_ORG_VE_NAME in full_path:
+                if re.search(REGEX_VENEZUELA_ENDS_WITH_DATE, file_name):
+                    return FILE_VENEZUELA_NAME_5
 
-    elif FILE_VENEZUELA_GENERIC_NAME in file_name:
-        if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
-            return FILE_VENEZUELA_NAME_1
+            elif FILE_VENEZUELA_CENTOS02_VARNISH_NAME in full_path:
+                return FILE_VENEZUELA_NAME_6
+
+        elif FILE_VENEZUELA_GENERIC_NAME_1 in file_name:
+            if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
+                return FILE_VENEZUELA_NAME_1
+
+        elif FILE_VENEZUELA_GENERIC_NAME_2 in file_name:
+            if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
+                return FILE_VENEZUELA_NAME_2
+
+    elif FILE_VENEZUELA_HA_NAME in full_path:
+        return FILE_VENEZUELA_NAME_7
 
 
 def extract_log_server_name(full_path):
