@@ -9,9 +9,10 @@ FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
 FILE_VARNISH_NAME = 'varnish'
 
 # Logs SciELO Brasil (site novo)
-FILE_NEW_BR_NAME = 'opac'
-FILE_NEW_BR_NAME_1 = 'new-br1'
-FILE_NEW_BR_NAME_2 = 'new-br2'
+FILE_NEW_BR_VARNISH02_NAME = 'newbrvarnish02'
+FILE_NEW_BR_VARNISH03_NAME = 'newbrvarnish03'
+FILE_NEW_BR_NAME_3 = 'new-br3'
+FILE_NEW_BR_NAME_4 = 'new-br4'
 
 # Logs SciELO Preprints
 FILE_PREPRINTS_NAME = 'preprints'
