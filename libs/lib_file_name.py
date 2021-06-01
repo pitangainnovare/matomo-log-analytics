@@ -65,11 +65,10 @@ def _check_ratchet(full_path, file_name):
 
 
 def _check_new_brasil(full_path, file_name):
-    if FILE_NEW_BR_NAME in full_path:
-        if file_name.startswith(FILE_NEW_BR_NAME):
-            return FILE_NEW_BR_NAME_2
-
-        return FILE_NEW_BR_NAME_1
+    if FILE_NEW_BR_VARNISH02_NAME in full_path:
+        return FILE_NEW_BR_NAME_3
+    elif FILE_NEW_BR_VARNISH03_NAME in full_path:
+        return FILE_NEW_BR_NAME_4
 
 
 def _check_venezuela(full_path, file_name):
