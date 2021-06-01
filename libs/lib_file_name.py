@@ -3,7 +3,6 @@ import datetime
 import logging
 import re
 import os
-import sys
 
 from libs.values import *
 
