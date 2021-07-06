@@ -176,8 +176,10 @@ def main():
                 update_date_status(SESSION_FACTORY(), COLLECTION)
 
         logging.info('Removing files %s and %s' % (file_path, gunzipped_file_path))
-        os.remove(file_path)
-        os.remove(gunzipped_file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        if os.path.exists(gunzipped_file_path):
+            os.remove(gunzipped_file_path)
 
         time_end = time.time()
         logging.info('Time spent: (%.2f) seconds' % (time_end - time_start))
