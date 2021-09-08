@@ -53,7 +53,13 @@ def compute_date_status(logfile_status_list, collection, date=None):
         if s == LOG_FILE_STATUS_LOADED:
             status_sum += 1
 
-    expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection, DEFAULT_STATUS_SUM)
+    if collection == 'scl':
+        if date > datetime.datetime.strptime('2021-05-25', '%Y-%m-%d').date():
+            expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('after_2021_05_25')
+        else:
+            expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('before_2021_05_25')
+    else:
+        expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection, DEFAULT_STATUS_SUM)
 
     if status_sum == expected_status_sum:
         return DATE_STATUS_LOADED
