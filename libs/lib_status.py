@@ -33,7 +33,9 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'pry': 1,
     'psi': 1,
     'rve': 1,
-    'scl': 2,
+    'scl': {
+        'before_2021_05_25': 2,
+        'after_2021_05_25': 1},
     'ssp': 2,
     'sss': 1,
     'sza': 1,
