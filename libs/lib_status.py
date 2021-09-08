@@ -33,7 +33,9 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'pry': 1,
     'psi': 1,
     'rve': 1,
-    'scl': 2,
+    'scl': {
+        'before_2021_05_25': 2,
+        'after_2021_05_25': 1},
     'ssp': 2,
     'sss': 1,
     'sza': 1,
@@ -45,13 +47,19 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
 DEFAULT_STATUS_SUM = 2
 
 
-def compute_date_status(logfile_status_list, collection):
+def compute_date_status(logfile_status_list, collection, date=None):
     status_sum = 0
     for s in logfile_status_list:
         if s == LOG_FILE_STATUS_LOADED:
             status_sum += 1
 
-    expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection, DEFAULT_STATUS_SUM)
+    if collection == 'scl':
+        if date > datetime.datetime.strptime('2021-05-25', '%Y-%m-%d').date():
+            expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('after_2021_05_25')
+        else:
+            expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('before_2021_05_25')
+    else:
+        expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection, DEFAULT_STATUS_SUM)
 
     if status_sum == expected_status_sum:
         return DATE_STATUS_LOADED

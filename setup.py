@@ -2,15 +2,15 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    'sqlalchemy==1.3.22',
-    'mysqlclient==1.4.6',
-    'python-magic==0.4.22',
+    'sqlalchemy',
+    'mysqlclient',
+    'python-magic',
 ]
 
 
 setup(
     name="scielo-matomo-manager",
-    version='0.1',
+    version='0.1.1',
     description="The SciELO Matomo Manager",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",

@@ -113,10 +113,13 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '-m', '--execution_mode',
-        dest='exec_mode',
-        default=['update_log_file', 'copy_logs', 'date_status'],
-        help='Modo de execução'
+        '--execution_mode',
+        action='append',
+        help='Modos de execução',
+        choices=[
+            'update_table_log_file',
+            'update_table_date_status',
+            'copy_logs']
     )
 
     params = parser.parse_args()
@@ -136,14 +139,14 @@ def main():
     logging.info('Checking for recovery data...')
     check_and_fix_recovery_data()
 
-    if 'update_log_file' in params.exec_mode:
+    if 'update_table_log_file' in params.execution_mode:
         for dir_log in [DIR_USAGE_LOGS_1, DIR_USAGE_LOGS_2]:
             logging.info('Updating table log_file with possible new logs in %s' % dir_log)
             update_available_log_files(SESSION_FACTORY(), dir_log, COLLECTION)
 
-    if 'copy_logs' in params.exec_mode:
+    if 'copy_logs' in params.execution_mode:
         copy_available_log_files(SESSION_FACTORY(), COLLECTION, DIR_WORKING_LOGS, COPY_FILES_LIMIT)
 
-    if 'date_status' in params.exec_mode:
+    if 'update_table_date_status' in params.execution_mode:
         logging.info('Updating table date_status')
         update_date_status(SESSION_FACTORY(), COLLECTION)
