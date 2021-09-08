@@ -45,7 +45,7 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
 DEFAULT_STATUS_SUM = 2
 
 
-def compute_date_status(logfile_status_list, collection):
+def compute_date_status(logfile_status_list, collection, date=None):
     status_sum = 0
     for s in logfile_status_list:
         if s == LOG_FILE_STATUS_LOADED:
