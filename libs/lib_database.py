@@ -7,6 +7,7 @@ from libs.lib_status import (
     compute_date_status,
     DATE_STATUS_PARTIAL,
     DATE_STATUS_QUEUE,
+    DATE_STATUS_COMPLETED,
     LOG_FILE_STATUS_QUEUE,
     LOG_FILE_STATUS_LOADED, is_valid_log, LOG_FILE_STATUS_INVALID
 )
@@ -31,6 +32,15 @@ def get_recent_log_files(db_session, collection, ignore_status_list, limit=1000)
         return db_session.query(LogFile).filter(LogFile.collection == collection).filter(LogFile.status.notin_(ignore_status_list)).order_by(LogFile.date.desc()).limit(limit).all()
     except OperationalError:
         logging.info('Can\'t get recent log files. MySQL Server is unavailable.')
+
+
+def get_date_status_completed(db_session, collection, dates_list):
+    try:
+        return db_session.query(DateStatus).filter(and_(
+            DateStatus.collection == collection,
+            DateStatus.status == DATE_STATUS_COMPLETED)).filter(DateStatus.date.in_(dates_list)).all()
+    except OperationalError:
+        logging.info('Can\'t get records from table date_status. MySQL Server is unavailable.')
 
 
 def get_lines_parsed(db_session, log_file_id):
