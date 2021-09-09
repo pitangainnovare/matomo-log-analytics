@@ -63,3 +63,9 @@ def clean_pretables(pretables_to_remove):
         os.remove(pt)
 
 
+def clean_r5_metrics(r5_files_to_remove):
+    for r5f in r5_files_to_remove:
+        logging.info('Removing file %s' % r5f)
+        os.remove(r5f)
+
+
