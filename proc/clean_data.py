@@ -69,3 +69,13 @@ def clean_r5_metrics(r5_files_to_remove):
         os.remove(r5f)
 
 
+def check_dirs():
+    for d in [DIR_PRETABLES, DIR_R5_METRICS, DIR_ZIPS_PRETABLES]:
+        if not os.path.exists(d):
+            logging.error('%s does not exist' % d)
+            exit()
+        if not os.path.isdir(d):
+            logging.error('%s is not a directory' % d)
+            exit()
+
+
