@@ -52,3 +52,14 @@ def get_files_to_remove(directory, session, extension, prefix=None):
     return [_get_date_file_path(directory, dc, extension, prefix) for dc in date_status_completed] if date_status_completed else []
 
 
+def clean_pretables(pretables_to_remove):
+    for pt in pretables_to_remove:
+        logging.info('Zipping file %s' % pt)
+        head, tail = os.path.split(pt)
+        path_output = os.path.join(DIR_ZIPS_PRETABLES, tail + '.tar.gz' )
+        _compact_file(path_input=pt, path_output=path_output)
+
+        logging.info('Removing file %s' % pt)
+        os.remove(pt)
+
+
