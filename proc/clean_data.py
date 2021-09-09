@@ -47,3 +47,8 @@ def _get_date_status_completed(directory, session):
     return get_date_status_completed(session, COLLECTION, dates_files)
 
 
+def get_files_to_remove(directory, session, extension, prefix=None):
+    date_status_completed = _get_date_status_completed(directory, session)
+    return [_get_date_file_path(directory, dc, extension, prefix) for dc in date_status_completed] if date_status_completed else []
+
+
