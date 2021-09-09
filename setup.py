@@ -10,7 +10,7 @@ install_requires = [
 
 setup(
     name="scielo-matomo-manager",
-    version='0.1.4',
+    version='0.2',
     description="The SciELO Matomo Manager",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
@@ -25,5 +25,6 @@ setup(
     initialize_database=proc.initialize_database:main
     update_available_logs=proc.update_available_logs:main
     load_logs=proc.load_logs:main
+    clean_data=proc.clean_data:main
     """
 )
