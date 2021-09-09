@@ -29,6 +29,13 @@ ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
 SESSION_FACTORY = sessionmaker(bind=ENGINE)
 
 
+def _get_date_file_path(directory, date_status, extension, prefix):
+    if prefix:
+        return os.path.join(directory, prefix + date_status.date.strftime('%Y-%m-%d') + '.' + extension)
+    else:
+        return os.path.join(directory, date_status.date.strftime('%Y-%m-%d') + '.' + extension)
+
+
 def _compact_file(path_input, path_output):
     with tarfile.open(path_output, "w:gz") as tar:
         tar.add(path_input, arcname=os.path.basename(path_input))
