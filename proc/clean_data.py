@@ -39,3 +39,11 @@ def _get_date_file_path(directory, date_status, extension, prefix):
 def _compact_file(path_input, path_output):
     with tarfile.open(path_output, "w:gz") as tar:
         tar.add(path_input, arcname=os.path.basename(path_input))
+
+
+def _get_date_status_completed(directory, session):
+    files = os.listdir(directory)
+    dates_files = [extract_log_date(f) for f in files]
+    return get_date_status_completed(session, COLLECTION, dates_files)
+
+
