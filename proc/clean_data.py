@@ -29,3 +29,6 @@ ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
 SESSION_FACTORY = sessionmaker(bind=ENGINE)
 
 
+def _compact_file(path_input, path_output):
+    with tarfile.open(path_output, "w:gz") as tar:
+        tar.add(path_input, arcname=os.path.basename(path_input))
