@@ -79,3 +79,33 @@ def check_dirs():
             exit()
 
 
+def main():
+    usage = """Compacta e remove arquivos já processados da aplicação Matomo/COUNTER/SUSHI."""
+    parser = argparse.ArgumentParser(usage)
+
+    parser.add_argument(
+        '-u', '--database_uri',
+        default=LOG_FILE_DATABASE_STRING,
+        dest='database_uri',
+        help='String no formato mysql://username:password@host1:port/database'
+    )
+
+    parser.add_argument(
+        '--logging_level',
+        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'],
+        dest='logging_level',
+        default='INFO'
+    )
+
+    params = parser.parse_args()
+    logging.basicConfig(level=LOGGING_LEVEL,
+                        format='[%(asctime)s] %(levelname)s %(message)s',
+                        datefmt='%d/%b/%Y %H:%M:%S')
+
+    check_dirs()
+
+    pretables_to_remove = get_files_to_remove(DIR_PRETABLES, SESSION_FACTORY(), extension='tsv')
+    clean_pretables(pretables_to_remove)
+
+    r5_files_to_remove = get_files_to_remove(DIR_R5_METRICS, SESSION_FACTORY(), extension='csv', prefix='r5-metrics-')
+    clean_r5_metrics(r5_files_to_remove)
