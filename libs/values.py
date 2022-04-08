@@ -46,6 +46,7 @@ FILE_VENEZUELA_NAME_7 = 'ven7'
 # Logs SciELO de outras coleções
 PARTIAL_FILE_NAME_TO_SERVER = {
     'scielo.ar.': ('arg', ''),
+    'scielo.bo.': ('bol', ''),
     'scielo.cl.': ('chl', ''),
     'scielo.co.': ('col', ''),
     'scielo.cr.': ('cri', ''),
