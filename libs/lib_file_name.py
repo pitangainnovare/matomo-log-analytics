@@ -69,6 +69,10 @@ def _check_new_brasil(full_path, file_name):
         return FILE_NEW_BR_NAME_3
     elif FILE_NEW_BR_VARNISH03_NAME in full_path:
         return FILE_NEW_BR_NAME_4
+    elif FILE_NEW_BR_VARNISH05_NAME in full_path:
+        return FILE_NEW_BR_NAME_5
+    elif FILE_NEW_BR_VARNISH06_NAME in full_path:
+        return FILE_NEW_BR_NAME_6
 
 
 def _check_venezuela(full_path, file_name):
