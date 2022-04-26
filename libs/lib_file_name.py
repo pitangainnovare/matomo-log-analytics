@@ -7,7 +7,6 @@ import os
 from libs.values import *
 
 
-COLLECTION = os.environ.get('COLLECTION', 'scl')
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
