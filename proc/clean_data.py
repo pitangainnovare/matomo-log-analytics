@@ -1,28 +1,21 @@
 # coding=utf-8
 import argparse
 import logging
-import magic
 import os
-import subprocess
 import tarfile
-import time
 
 from sys import exit
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from libs.lib_database import get_date_status_completed
 from libs.lib_file_name import extract_log_date
-from libs.lib_status import LOG_FILE_STATUS_LOADING, LOG_FILE_STATUS_INVALID, LOG_FILE_STATUS_LOADED
 
 
 COLLECTION = os.environ.get('COLLECTION', 'scl')
 DIR_PRETABLES = os.environ.get('DIR_PRETABLES', os.path.join('/app/data/pretables', COLLECTION))
 DIR_ZIPS_PRETABLES = os.environ.get('DIR_ZIPS_PRETABLES', os.path.join('/app/data/zips/pretables', COLLECTION))
 DIR_R5_METRICS = os.environ.get('DIR_R5_METRICS', os.path.join('/app/data/r5', COLLECTION))
-
 LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
-
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 
 ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
@@ -52,11 +45,11 @@ def get_files_to_remove(directory, session, extension, prefix=None):
     return [_get_date_file_path(directory, dc, extension, prefix) for dc in date_status_completed] if date_status_completed else []
 
 
-def clean_pretables(pretables_to_remove):
+def clean_pretables(dir_zip_pretables, pretables_to_remove):
     for pt in pretables_to_remove:
         logging.info('Zipping file %s' % pt)
         head, tail = os.path.split(pt)
-        path_output = os.path.join(DIR_ZIPS_PRETABLES, tail + '.tar.gz' )
+        path_output = os.path.join(dir_zip_pretables, tail + '.tar.gz' )
         _compact_file(path_input=pt, path_output=path_output)
 
         logging.info('Removing file %s' % pt)
@@ -69,14 +62,13 @@ def clean_r5_metrics(r5_files_to_remove):
         os.remove(r5f)
 
 
-def check_dirs():
-    for d in [DIR_PRETABLES, DIR_R5_METRICS, DIR_ZIPS_PRETABLES]:
-        if not os.path.exists(d):
-            logging.error('%s does not exist' % d)
-            exit()
-        if not os.path.isdir(d):
-            logging.error('%s is not a directory' % d)
-            exit()
+def check_dir(directory):
+    if not os.path.exists(directory):
+        logging.error('%s does not exist' % directory)
+        exit()
+    if not os.path.isdir(directory):
+        logging.error('%s is not a directory' % directory)
+        exit()
 
 
 def main():
@@ -91,6 +83,24 @@ def main():
     )
 
     parser.add_argument(
+        '--dir_pretables',
+        help='Diretório com arquivos de pré-tabelas',
+        default=DIR_PRETABLES
+    )
+
+    parser.add_argument(
+        '--dir_r5',
+        help='Diretório com arquivos de métricas r5',
+        default=DIR_R5_METRICS
+    )
+
+    parser.add_argument(
+        '--dir_zip_pretables',
+        help='Diretório com arquivos compactados de pré-tabelas',
+        default=DIR_PRETABLES
+    )
+
+    parser.add_argument(
         '--logging_level',
         choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'],
         dest='logging_level',
@@ -102,10 +112,15 @@ def main():
                         format='[%(asctime)s] %(levelname)s %(message)s',
                         datefmt='%d/%b/%Y %H:%M:%S')
 
-    check_dirs()
+    for d in [
+        params.dir_pretables,
+        params.dir_r5,
+        params.dir_zip_pretables
+    ]:
+        check_dir(d)
 
-    pretables_to_remove = get_files_to_remove(DIR_PRETABLES, SESSION_FACTORY(), extension='tsv')
-    clean_pretables(pretables_to_remove)
+    pretables_to_remove = get_files_to_remove(params.dir_pretables, SESSION_FACTORY(), extension='tsv')
+    clean_pretables(params.dir_zip_pretables, pretables_to_remove)
 
-    r5_files_to_remove = get_files_to_remove(DIR_R5_METRICS, SESSION_FACTORY(), extension='csv', prefix='r5-metrics-')
+    r5_files_to_remove = get_files_to_remove(params.dir_r5, SESSION_FACTORY(), extension='csv', prefix='r5-metrics-')
     clean_r5_metrics(r5_files_to_remove)
