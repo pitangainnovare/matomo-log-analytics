@@ -7,15 +7,14 @@ import os
 from libs.values import *
 
 
-LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
-
+LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO')
 FILE_SUMMARY_POSFIX_EXTENSION = '.summary.txt'
 FILE_GUNZIPPED_LOG_EXTENSION = '.gz'
 FILE_LOG_EXTENSION = '.log'
 REGEX_DATE = r'\d{4}-\d{2}-\d{2}'
 REGEX_DATE_NO_HYPHEN = r'[1-2]{1}\d{3}[0-1]{1}\d{1}\d{2}'
 
-logging.basicConfig(level=LOGGING_LEVEL,
+logging.basicConfig(level=LOGLEVEL,
                     format='[%(asctime)s] %(levelname)s %(message)s',
                     datefmt='%d/%b/%Y %H:%M:%S')
 
