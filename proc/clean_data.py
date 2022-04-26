@@ -30,14 +30,14 @@ def _compact_file(path_input, path_output):
         tar.add(path_input, arcname=os.path.basename(path_input))
 
 
-def _get_date_status_completed(directory, session):
+def _get_date_status_completed(directory, session, collection):
     files = os.listdir(directory)
     dates_files = [extract_log_date(f) for f in files]
-    return get_date_status_completed(session, COLLECTION, dates_files)
+    return get_date_status_completed(session, collection, dates_files)
 
 
-def get_files_to_remove(directory, session, extension, prefix=None):
-    date_status_completed = _get_date_status_completed(directory, session)
+def get_files_to_remove(collection, directory, session, extension, prefix=None):
+    date_status_completed = _get_date_status_completed(directory, session, collection)
     return [_get_date_file_path(directory, dc, extension, prefix) for dc in date_status_completed] if date_status_completed else []
 
 
@@ -72,51 +72,42 @@ def main():
     parser = argparse.ArgumentParser(usage)
 
     parser.add_argument(
-        '-u', '--database_uri',
-        default=LOG_FILE_DATABASE_STRING,
-        dest='database_uri',
-        help='String no formato mysql://username:password@host1:port/database'
+        '--collection',
+        required=True,
     )
 
     parser.add_argument(
         '--dir_pretables',
         help='Diretório com arquivos de pré-tabelas',
-        default=DIR_PRETABLES
+        required=True,
     )
 
     parser.add_argument(
-        '--dir_r5',
+        '--dir_r5_metrics',
         help='Diretório com arquivos de métricas r5',
-        default=DIR_R5_METRICS
+        required=True,
     )
 
     parser.add_argument(
         '--dir_zip_pretables',
         help='Diretório com arquivos compactados de pré-tabelas',
-        default=DIR_PRETABLES
-    )
-
-    parser.add_argument(
-        '--logging_level',
-        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'],
-        dest='logging_level',
-        default='INFO'
+        required=True,
     )
 
     params = parser.parse_args()
-    logging.basicConfig(level=LOGGING_LEVEL,
+    logging.basicConfig(level=LOGLEVEL,
                         format='[%(asctime)s] %(levelname)s %(message)s',
                         datefmt='%d/%b/%Y %H:%M:%S')
 
     for d in [
         params.dir_pretables,
-        params.dir_r5,
+        params.dir_r5_metrics,
         params.dir_zip_pretables
     ]:
         check_dir(d)
 
-    pretables_to_remove = get_files_to_remove(params.dir_pretables, SESSION_FACTORY(), extension='tsv')
+    pretables_to_remove = get_files_to_remove(params.collection, params.dir_pretables, SESSION_FACTORY(), extension='tsv')
     clean_pretables(params.dir_zip_pretables, pretables_to_remove)
 
-    r5_files_to_remove = get_files_to_remove(params.dir_r5, SESSION_FACTORY(), extension='csv', prefix='r5-metrics-')
+    r5_files_to_remove = get_files_to_remove(params.collection, params.dir_r5_metrics, SESSION_FACTORY(), extension='csv', prefix='r5-metrics-')
     clean_r5_metrics(r5_files_to_remove)
