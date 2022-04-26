@@ -27,7 +27,10 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'ecu': 1,
     'esp': 1,
     'mex': 1,
-    'nbr': 2,
+    'nbr': {
+        'after_2022_04_05': 3,
+        'before_2022_04_06': 2,
+    },
     'pre': 1,
     'prt': 1,
     'pry': 1,
@@ -58,6 +61,11 @@ def compute_date_status(logfile_status_list, collection, date=None):
             expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('after_2021_05_25')
         else:
             expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('before_2021_05_25')
+    elif collection == 'nbr':
+        if date > datetime.datetime.strptime('2022-04-05', '%Y-%m-%d').date():
+            expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('after_2022_04_05')
+        else:
+            expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection).get('before_2022_04_06')
     else:
         expected_status_sum = COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM.get(collection, DEFAULT_STATUS_SUM)
 

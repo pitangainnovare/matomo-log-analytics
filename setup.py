@@ -10,8 +10,8 @@ install_requires = [
 
 setup(
     name="scielo-matomo-manager",
-    version='0.2.2',
-    description="The SciELO Matomo Manager",
+    version='0.3.0',
+    description="The SciELO Log Discover",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
     license="BSD",
@@ -24,7 +24,6 @@ setup(
     [console_scripts]
     initialize_database=proc.initialize_database:main
     update_available_logs=proc.update_available_logs:main
-    load_logs=proc.load_logs:main
     clean_data=proc.clean_data:main
     """
 )
