@@ -8,12 +8,10 @@ from sqlalchemy.orm import sessionmaker
 from libs import lib_database
 
 
-COLLECTION = os.environ.get('COLLECTION', 'scl')
-DIR_USAGE_LOGS = os.environ.get('DIR_USAGE_LOGS', '/app/usage-logs')
-LOG_FILE_DATABASE_STRING = os.environ.get('LOG_FILE_DATABASE_STRING', 'mysql://user:pass@localhost:3306/matomo')
-LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
+STR_CONNECTION = os.environ.get('STR_CONNECTION', 'mysql://user:pass@localhost:3306/matomo')
+LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO')
 
-ENGINE = create_engine(LOG_FILE_DATABASE_STRING)
+ENGINE = create_engine(STR_CONNECTION)
 SESSION_FACTORY = sessionmaker(bind=ENGINE)
 
 
