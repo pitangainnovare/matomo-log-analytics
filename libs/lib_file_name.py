@@ -21,7 +21,7 @@ logging.basicConfig(level=LOGGING_LEVEL,
                     datefmt='%d/%b/%Y %H:%M:%S')
 
 
-def _check_brasil(full_path, file_name):
+def _check_brasil(full_path, file_name, collection):
     if FILE_NODE03_NAME in full_path:
         return FILE_NODE03_NAME
 
@@ -33,7 +33,7 @@ def _check_brasil(full_path, file_name):
             return FILE_HIPERION_VARNISH_NAME
 
 
-def _check_dataverse(full_path, file_name):
+def _check_dataverse(full_path, file_name, collection):
     if FILE_DATAVERSE_NAME in full_path:
         if FILE_DATAVERSE_DOT_NAME in file_name:
             return FILE_DATAVERSE_NAME_2
@@ -41,20 +41,20 @@ def _check_dataverse(full_path, file_name):
         return FILE_DATAVERSE_NAME_1
 
 
-def _check_preprints(full_path, file_name):
+def _check_preprints(full_path, file_name, collection):
     if FILE_PREPRINTS_NAME in full_path:
         if FILE_PREPRINTS_NAME in file_name:
             return FILE_PREPRINTS_NAME
 
 
-def _check_ratchet(full_path, file_name):
+def _check_ratchet(full_path, file_name, collection):
     results = []
 
     for k in PARTIAL_FILE_NAME_TO_SERVER:
         if k in file_name:
             server_prefix, server_number = PARTIAL_FILE_NAME_TO_SERVER[k]
 
-            if COLLECTION in server_prefix:
+            if collection in server_prefix:
                 results.append(''.join(PARTIAL_FILE_NAME_TO_SERVER[k]))
 
     if len(results) == 1:
@@ -64,7 +64,7 @@ def _check_ratchet(full_path, file_name):
         logging.error('%s pertence a mais de uma coleção.' % full_path)
 
 
-def _check_new_brasil(full_path, file_name):
+def _check_new_brasil(full_path, file_name, collection):
     if FILE_NEW_BR_VARNISH02_NAME in full_path:
         return FILE_NEW_BR_NAME_3
     elif FILE_NEW_BR_VARNISH03_NAME in full_path:
@@ -75,7 +75,7 @@ def _check_new_brasil(full_path, file_name):
         return FILE_NEW_BR_NAME_6
 
 
-def _check_venezuela(full_path, file_name):
+def _check_venezuela(full_path, file_name, collection):
     if FILE_VENEZUELA_APACHE_NAME in full_path:
         if FILE_VENEZUELA_CENTOS01_NAME in full_path:
             if re.search(REGEX_VENEZUELA_STARTS_WITH_DATE, file_name):
@@ -107,7 +107,7 @@ def _check_venezuela(full_path, file_name):
         return FILE_VENEZUELA_NAME_7
 
 
-def extract_log_server_name(full_path):
+def extract_log_server_name(full_path, collection):
     collection_to_check_method = {
         'nbr': _check_new_brasil,
         'scl': _check_brasil,
@@ -117,8 +117,8 @@ def extract_log_server_name(full_path):
     }
 
     file_name = extract_file_name(full_path)
-    check_method = collection_to_check_method.get(COLLECTION, _check_ratchet)
-    check_result = check_method(full_path, file_name)
+    check_method = collection_to_check_method.get(collection, _check_ratchet)
+    check_result = check_method(full_path, file_name, collection)
 
     if check_result:
         return check_result

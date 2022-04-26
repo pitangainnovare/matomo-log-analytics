@@ -66,7 +66,7 @@ def update_available_log_files(db_session, dir_usage_logs, collection):
     for root, dirs, files in os.walk(dir_usage_logs):
         for name in files:
             file = os.path.join(root, name)
-            server = extract_log_server_name(file)
+            server = extract_log_server_name(file, collection)
             date = extract_log_date(file)
 
             if server and date:
