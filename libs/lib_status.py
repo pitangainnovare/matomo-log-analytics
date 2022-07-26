@@ -20,6 +20,7 @@ LOG_FILE_STATUS_INVALID = -9
 
 COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'arg': 1,
+    'bol': 1,
     'chl': 1,
     'col': 1,
     'cri': 1,
