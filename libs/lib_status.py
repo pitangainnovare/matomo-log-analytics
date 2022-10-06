@@ -46,7 +46,7 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'sza': 1,
     'ury': 1,
     'ven': 1,
-    'wid': 2,
+    'wid': 1,
 }
 
 DEFAULT_STATUS_SUM = 2
