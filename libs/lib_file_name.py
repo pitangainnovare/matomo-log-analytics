@@ -55,6 +55,14 @@ def _check_ratchet(full_path, file_name, collection):
             if collection in server_prefix:
                 results.append(''.join(PARTIAL_FILE_NAME_TO_SERVER[k]))
 
+    if len(results) == 0:
+        for k in PARTIAL_DIR_TO_SERVER:
+            if k in full_path:
+                server_prefix, server_number = PARTIAL_DIR_TO_SERVER[k]
+
+                if collection in server_prefix:
+                    results.append(''.join(PARTIAL_DIR_TO_SERVER[k]))
+
     if len(results) == 1:
         return results[0]
 
