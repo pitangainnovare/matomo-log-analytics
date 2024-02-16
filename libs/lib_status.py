@@ -24,6 +24,7 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'chl': 1,
     'col': 1,
     'cri': 1,
+    'cub': 1,
     'dat': 1,
     'ecu': 1,
     'esp': 1,
