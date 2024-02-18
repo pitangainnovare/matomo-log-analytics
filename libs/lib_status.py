@@ -27,7 +27,7 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'cub': 1,
     'dat': 1,
     'ecu': 1,
-    'esp': 1,
+    'esp': 2,
     'mex': 1,
     'nbr': {
         'after_2022_05_08': 2,
