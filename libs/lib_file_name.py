@@ -71,7 +71,11 @@ def _check_ratchet(full_path, file_name, collection):
 
 
 def _check_new_brasil(full_path, file_name, collection):
-    if FILE_NEW_BR_VARNISH02_NAME in full_path:
+    if FILE_SCL_2 in full_path:
+        return FILE_SCL_2_NAME
+    elif FILE_SCL_4 in full_path:
+        return FILE_SCL_4_NAME
+    elif FILE_NEW_BR_VARNISH02_NAME in full_path:
         return FILE_NEW_BR_NAME_3
     elif FILE_NEW_BR_VARNISH03_NAME in full_path:
         return FILE_NEW_BR_NAME_4

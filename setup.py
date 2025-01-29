@@ -10,7 +10,7 @@ install_requires = [
 
 setup(
     name="scielo-matomo-manager",
-    version='0.3.5',
+    version='0.4.0',
     description="The SciELO Log Discover",
     author="SciELO",
     author_email="scielo-dev@googlegroups.com",
