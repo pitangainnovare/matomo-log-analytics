@@ -76,7 +76,7 @@ PARTIAL_FILE_NAME_TO_SERVER = {
     'scielo.revenf.': ('rve', ''),
     'scielo.sp.1.': ('ssp', '1'),
     'scielo.sp.2.': ('ssp', '2'),
-    'scielo.ss.': ('sss', '')
+    'scielo.ss.': ('sss', ''),
     'scielo.nbr.2.': ('nbr', '2'),
     'scielo.nbr.4.': ('nbr', '4'),
 }
