@@ -75,6 +75,11 @@ def _check_new_brasil(full_path, file_name, collection):
         return FILE_SCL_2_NAME
     elif FILE_SCL_4 in full_path:
         return FILE_SCL_4_NAME
+    # Verifica se o termo bunnynet está no caminho
+    # Verifica se o nome do arquivo é algo com scielo-br
+    # Esses dois critérios são um workaround para lidar com os logs no diretório /logs-bunnynet
+    elif BUNNY_NAME in full_path and FILE_SCL_BUNNY in file_name:
+        return FILE_SCL_BUNNY_NAME
     elif FILE_NEW_BR_VARNISH02_NAME in full_path:
         return FILE_NEW_BR_NAME_3
     elif FILE_NEW_BR_VARNISH03_NAME in full_path:
