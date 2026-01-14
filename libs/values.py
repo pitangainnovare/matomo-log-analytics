@@ -7,12 +7,18 @@ FILE_HIPERION_NAME = 'hiperion'
 FILE_HIPERION_APACHE_NAME = 'hiperion-apache'
 FILE_HIPERION_VARNISH_NAME = 'hiperion-varnish'
 FILE_VARNISH_NAME = 'varnish'
-FILE_SCL_2 = 'scielo.nbr.2.'
-FILE_SCL_4 = 'scielo.nbr.4.'
 
 # Logs SciELO Brasil (site novo)
+FILE_SCL_2 = 'scielo.nbr.2.'
 FILE_SCL_2_NAME = 'scl2'
+
+FILE_SCL_4 = 'scielo.nbr.4.'
 FILE_SCL_4_NAME = 'scl4'
+
+FILE_SCL_BUNNY = 'scielo-br'
+FILE_SCL_BUNNY_NAME = 'sclbunny'
+BUNNY_NAME = 'bunnynet'
+
 FILE_NEW_BR_VARNISH02_NAME = 'newbrvarnish02'
 FILE_NEW_BR_VARNISH03_NAME = 'newbrvarnish03'
 FILE_NEW_BR_VARNISH05_NAME = 'newbrvarnish05'
@@ -79,6 +85,7 @@ PARTIAL_FILE_NAME_TO_SERVER = {
     'scielo.ss.': ('sss', ''),
     'scielo.nbr.2.': ('nbr', '2'),
     'scielo.nbr.4.': ('nbr', '4'),
+    'scielo-br': ('nbr', 'bunny'),
 }
 
 # Logs de coleção não detectada
