@@ -30,6 +30,7 @@ COLLECTION_TO_EXPECTED_DAILY_STATUS_SUM = {
     'esp': 2,
     'mex': 1,
     'nbr': {
+        'after_2025_08_16': 1,
         'after_2022_05_08': 2,
         'after_2022_04_05': 3,
         'before_2022_04_06': 2,
