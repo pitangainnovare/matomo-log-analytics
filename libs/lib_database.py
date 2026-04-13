@@ -5,6 +5,7 @@ import os
 from libs.lib_file_name import extract_log_server_name, extract_log_date, extract_log_file_name
 from libs.lib_status import (
     compute_date_status,
+    DATE_STATUS_NO_LOG,
     DATE_STATUS_PARTIAL,
     DATE_STATUS_QUEUE,
     DATE_STATUS_COMPLETED,
@@ -132,7 +133,7 @@ def update_date_status(db_session, collection):
                 existing_date_status = db_session.query(DateStatus).filter(and_(DateStatus.collection == collection,
                                                                                 DateStatus.date == key)).one()
                 if new_status != existing_date_status.status:
-                    if existing_date_status.status in [DATE_STATUS_QUEUE, DATE_STATUS_PARTIAL]:
+                    if existing_date_status.status in [DATE_STATUS_QUEUE, DATE_STATUS_PARTIAL, DATE_STATUS_NO_LOG]:
                         existing_date_status.status = new_status
 
             except NoResultFound:
