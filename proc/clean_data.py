@@ -52,7 +52,7 @@ def clean_pretables(dir_zip_pretables, pretables_to_remove):
         os.remove(pt)
 
 
-def clean_r5_metrics(r5_files_to_remove):
+def clean_r5_files(r5_files_to_remove):
     for r5f in r5_files_to_remove:
         logging.info('Removing file %s' % r5f)
         os.remove(r5f)
@@ -89,6 +89,12 @@ def main():
     )
 
     parser.add_argument(
+        '--dir_r5_hits',
+        help='Diretório com arquivos de hits r5',
+        required=True,
+    )
+
+    parser.add_argument(
         '--dir_zip_pretables',
         help='Diretório com arquivos compactados de pré-tabelas',
         required=True,
@@ -102,6 +108,7 @@ def main():
     for d in [
         params.dir_pretables,
         params.dir_r5_metrics,
+        params.dir_r5_hits,
         params.dir_zip_pretables
     ]:
         check_dir(d)
@@ -109,5 +116,20 @@ def main():
     pretables_to_remove = get_files_to_remove(params.collection, params.dir_pretables, SESSION_FACTORY(), extension='tsv')
     clean_pretables(params.dir_zip_pretables, pretables_to_remove)
 
-    r5_files_to_remove = get_files_to_remove(params.collection, params.dir_r5_metrics, SESSION_FACTORY(), extension='csv', prefix='r5-metrics-')
-    clean_r5_metrics(r5_files_to_remove)
+    r5_metrics_files_to_remove = get_files_to_remove(
+        params.collection,
+        params.dir_r5_metrics,
+        SESSION_FACTORY(),
+        extension='csv',
+        prefix='r5-metrics-',
+    )
+    clean_r5_files(r5_metrics_files_to_remove)
+
+    r5_hits_files_to_remove = get_files_to_remove(
+        params.collection,
+        params.dir_r5_hits,
+        SESSION_FACTORY(),
+        extension='csv',
+        prefix='r5-hits-',
+    )
+    clean_r5_files(r5_hits_files_to_remove)
